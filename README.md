@@ -1,5 +1,7 @@
 # Math
 
+[![Build Status](https://travis-ci.org/fab2s/OpinHelpers.svg?branch=master)](https://travis-ci.org/fab2s/Math) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/fab2s/Math/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/fab2s/Math/?branch=master) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com) [![License](https://poser.pugx.org/fab2s/math/license)](https://packagist.org/packages/fab2s/math)
+
 A fluent [bcmath](https://php.net/bcmath) based _Helper_ to handle high precision calculus in base 10 with a rather strict approach (want precision for something right?).
 It does not try to be smart and just fails without `bcmath`, but it does auto detect [GMP](https://php.net/GMP) for faster base conversions.
 
