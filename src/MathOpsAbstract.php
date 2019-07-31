@@ -15,7 +15,7 @@ namespace fab2s\Math;
 abstract class MathOpsAbstract extends MathBaseAbstract
 {
     /**
-     * @param string|int|static[] $numbers
+     * @param array<string,int,static> $numbers
      *
      * @throws \InvalidArgumentException
      *
@@ -31,7 +31,7 @@ abstract class MathOpsAbstract extends MathBaseAbstract
     }
 
     /**
-     * @param string|int|static[] $numbers
+     * @param array<string,int,static> $numbers
      *
      * @throws \InvalidArgumentException
      *
@@ -47,7 +47,7 @@ abstract class MathOpsAbstract extends MathBaseAbstract
     }
 
     /**
-     * @param string|int|static[] $numbers
+     * @param array<string,int,static> $numbers
      *
      * @throws \InvalidArgumentException
      *
@@ -63,7 +63,7 @@ abstract class MathOpsAbstract extends MathBaseAbstract
     }
 
     /**
-     * @param string|int|static[] $numbers
+     * @param array<string,int,static> $numbers
      *
      * @throws \InvalidArgumentException
      *
@@ -201,7 +201,7 @@ abstract class MathOpsAbstract extends MathBaseAbstract
     /**
      * returns the highest number among all arguments
      *
-     * @param string|int|static[] $numbers
+     * @param array<string,int,static> $numbers
      *
      * @return static
      */
@@ -219,7 +219,7 @@ abstract class MathOpsAbstract extends MathBaseAbstract
     /**
      * returns the smallest number among all arguments
      *
-     * @param string|int|static[] $numbers
+     * @param array<string,int,static> $numbers
      *
      * @throws \InvalidArgumentException
      *
