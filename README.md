@@ -9,10 +9,10 @@ It does not try to be smart and just fails without `bcmath`, but it does auto de
 
 ## Installation
 
-OpinHelpers can be installed using composer :
+Math can be installed using composer :
 
 ```
-composer require "fab2s/opinhelpers"
+composer require "fab2s/math"
 ```
 
 `Math` is also included in [OpinHelper](https://github.com/fab2s/OpinHelpers) which packages several bellow "Swiss Army Knife" level Helpers covering some of the most annoying aspects of php programing, such as UTF8 string manipulation, high precision Mathematics or properly locking a file
