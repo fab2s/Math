@@ -263,7 +263,7 @@ abstract class MathBaseAbstract
     }
 
     /**
-     * @param string[int $number
+     * @param string|int $number
      * @param string|int $base
      * @param string     $baseChar
      *
@@ -289,7 +289,7 @@ abstract class MathBaseAbstract
     }
 
     /**
-     * @param string|static $number
+     * @param string|int|static $number
      *
      * @throws \InvalidArgumentException
      *
