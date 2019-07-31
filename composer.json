@@ -1,0 +1,39 @@
+{
+    "name" : "fab2s/math",
+    "description" : "A Base10 high precision math helper",
+    "type" : "library",
+    "authors" : [{
+        "name" : "Fabrice de Stefanis"
+    }],
+    "keywords" : [
+        "PHP",
+        "Simple",
+        "Base10",
+        "decimal",
+        "BcMath",
+        "HighPrecision"
+    ],
+    "license" : [
+        "MIT"
+    ],
+    "require" : {
+        "php": ">=7.1",
+        "ext-bcmath": "*"
+    },
+    "require-dev": {
+      "phpunit/phpunit": "~7.0|~8.0"
+    },
+    "autoload": {
+        "classmap": [
+          "src"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "fab2s\\Math\\Tests\\": "tests/"
+        }
+    },
+    "suggest": {
+        "ext-gmp": "For faster Math::baseConvert up to base62"
+    }
+}
