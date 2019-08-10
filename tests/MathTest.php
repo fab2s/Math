@@ -373,9 +373,9 @@ class MathTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider maxMinData
      *
-     * @param string|int|Math[] $param
-     * @param string|int|Math   $min
-     * @param string|int|Math   $max
+     * @param (string|int|Math)[] $param
+     * @param string|int|Math     $min
+     * @param string|int|Math     $max
      */
     public function testMax(array $param, $min, $max)
     {
@@ -390,9 +390,9 @@ class MathTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider maxMinData
      *
-     * @param string|int|Math[] $param
-     * @param string            $min
-     * @param string            $max
+     * @param (string|int|Math)[] $param
+     * @param string              $min
+     * @param string              $max
      */
     public function testMin(array $param, $min, $max)
     {
@@ -997,12 +997,38 @@ class MathTest extends \PHPUnit\Framework\TestCase
                 'expected' => false,
             ],
             [
+                'number'   => new Math('42 '),
+                'expected' => true,
+            ],
+            [
                 'number'   => '000',
                 'expected' => true,
             ],
             [
+                'number'   => '000.',
+                'expected' => false,
+            ],
+            [
                 'number'   => '.000',
                 'expected' => true,
+            ],
+            [
+                'number'   => '-.000',
+                'expected' => true,
+            ],
+            [
+                'number'   => '+.000',
+                'expected' => true,
+            ],
+
+            [
+                'number'   => '--27',
+                'expected' => false,
+            ],
+
+            [
+                'number'   => '++27',
+                'expected' => false,
             ],
         ];
     }

@@ -82,7 +82,7 @@ class Math extends MathOpsAbstract
     }
 
     /**
-     * @param string|static $number
+     * @param string|int|static $number
      *
      * @throws \InvalidArgumentException
      *
@@ -94,7 +94,7 @@ class Math extends MathOpsAbstract
     }
 
     /**
-     * @param string|static $number
+     * @param string|int|static $number
      *
      * @throws \InvalidArgumentException
      *
@@ -106,7 +106,7 @@ class Math extends MathOpsAbstract
     }
 
     /**
-     * @param string|static $number
+     * @param string|int|static $number
      *
      * @throws \InvalidArgumentException
      *
@@ -118,7 +118,7 @@ class Math extends MathOpsAbstract
     }
 
     /**
-     * @param string|static $number
+     * @param string|int|static $number
      *
      * @throws \InvalidArgumentException
      *
@@ -130,7 +130,7 @@ class Math extends MathOpsAbstract
     }
 
     /**
-     * @param string|static $number
+     * @param string|int|static $number
      *
      * @throws \InvalidArgumentException
      *
@@ -182,7 +182,7 @@ class Math extends MathOpsAbstract
      *
      * @return string
      */
-    public function format(int $decimals = 0, string $decPoint = '.', string $thousandsSep = ' '): string
+    public function format($decimals = 0, string $decPoint = '.', string $thousandsSep = ' '): string
     {
         $decimals = max(0, (int) $decimals);
         $dec      = '';

@@ -23,7 +23,7 @@ composer require "fab2s/math"
 
 ## In practice
 
-As `Math` is meant to be used where precision matters, it is pretty strict with input numbers : it will throw an exception whenever an input number does not match `^([+-]{1})?([0-9]+(\.[0-9]+)?|\.[0-9]+)$` after passing though `trim()`.
+As `Math` is meant to be used where precision matters, it is pretty strict with input numbers : it will throw an exception whenever an input number does not match `^[+-]?([0-9]+(\.[0-9]+)?|\.[0-9]+)$` after passing though `trim()`.
 
 In practice this means that "-.0051" and "00028.34" are ok, but "1E12", "3,14" or "1.1.1" will throw an exception. This is done so because in `bcmath` world, "1E12", "1.1.1" and "abc" are all "0", which could result in some disaster if you where to do nothing.
 
@@ -116,7 +116,7 @@ The way floats are handled in general and by PHP in particular is the very the r
 
 Precision handling does not rely on [bcscale](https://php.net/bcscale) as it is not so reliable IRL. As it is a global setup, it may affect or be affected by far away/unrelated code (with fpm it can actually spread to all PHP processes).
 
-`Math` handle precisions at both instance and global (limited to the current PHP process) precision. The global precision is stored in a static variable. When set, each new instance will start with this global precision as its own precision (you can still set the instance precision after instantiation). When no global precision is set, initial instance precision defaults to `Math::PRECISION` (currently 9, or 9 digit after the dot)
+`Math` handle precisions at both instance and global (limited to the current PHP process) precision. The global precision is stored in a static variable. When set, each new instance will start with this global precision as its own precision (you can still set the instance precision after instantiation). When no global precision is set, initial instance precision defaults to `Math::PRECISION` (currently 9, or 9 digits after the dot)
 
 ```php
 // set global precision

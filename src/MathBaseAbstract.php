@@ -163,7 +163,7 @@ abstract class MathBaseAbstract
      */
     public static function isNumber($number): bool
     {
-        return (bool) preg_match('`^([+-]{1})?([0-9]+(\.[0-9]+)?|\.[0-9]+)$`', $number);
+        return (bool) preg_match('`^[+-]?([0-9]+(\.[0-9]+)?|\.[0-9]+)$`', $number);
     }
 
     /**
@@ -310,7 +310,8 @@ abstract class MathBaseAbstract
     }
 
     /**
-     * @param string|int $integer
+     * @param string|int $integer up to INT_32|64 since it's only used for things
+     *                            like exponents, it should be enough
      *
      * @throws \InvalidArgumentException
      *
