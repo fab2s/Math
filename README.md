@@ -128,7 +128,7 @@ $number->setPrecision(14); // will use precision 14 for any further calculations
 
 ## Requirements
 
-Math is tested against php 7.1, 7.2 and 7.3.
+`Math` is tested against php 7.1, 7.2 and 7.3.
 
 ## Contributing
 
@@ -136,4 +136,4 @@ Contributions are welcome, do not hesitate to open issues and submit pull reques
 
 ## License
 
-SoUuid is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+`Math` is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
