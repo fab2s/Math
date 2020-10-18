@@ -128,7 +128,7 @@ $number->setPrecision(14); // will use precision 14 for any further calculations
 
 ## Requirements
 
-`Math` is tested against php 7.1, 7.2 and 7.3.
+`Math` is tested against php 7.1, 7.2, 7.3 and 7.4
 
 ## Contributing
 
