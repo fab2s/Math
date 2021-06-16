@@ -1,6 +1,6 @@
 # Math
 
-[![Build Status](https://travis-ci.org/fab2s/Math.svg?branch=master)](https://travis-ci.org/fab2s/Math) [![Total Downloads](https://poser.pugx.org/fab2s/math/downloads)](//packagist.org/packages/fab2s/math) [![Monthly Downloads](https://poser.pugx.org/fab2s/math/d/monthly)](//packagist.org/packages/fab2s/math) [![Latest Stable Version](https://poser.pugx.org/fab2s/math/v/stable)](https://packagist.org/packages/fab2s/math) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/fab2s/Math/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/fab2s/Math/?branch=master) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com) [![License](https://poser.pugx.org/fab2s/math/license)](https://packagist.org/packages/fab2s/math)
+[![Build Status](https://travis-ci.com/fab2s/Math.svg?branch=master)](https://travis-ci.com/fab2s/Math) [![Total Downloads](https://poser.pugx.org/fab2s/math/downloads)](//packagist.org/packages/fab2s/math) [![Monthly Downloads](https://poser.pugx.org/fab2s/math/d/monthly)](//packagist.org/packages/fab2s/math) [![Latest Stable Version](https://poser.pugx.org/fab2s/math/v/stable)](https://packagist.org/packages/fab2s/math) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/fab2s/Math/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/fab2s/Math/?branch=master) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com) [![License](https://poser.pugx.org/fab2s/math/license)](https://packagist.org/packages/fab2s/math)
 
 A fluent [bcmath](https://php.net/bcmath) based _Helper_ to handle high precision calculus in base 10 with a rather strict approach (want precision for something right?).
 It does not try to be smart and just fails without `bcmath`, but it does auto detect [GMP](https://php.net/GMP) for faster base conversions.
@@ -128,7 +128,7 @@ $number->setPrecision(14); // will use precision 14 for any further calculations
 
 ## Requirements
 
-`Math` is tested against php 7.1, 7.2, 7.3 and 7.4
+`Math` is tested against php 7.1, 7.2, 7.3, 7.4 and 8.0
 
 ## Contributing
 
