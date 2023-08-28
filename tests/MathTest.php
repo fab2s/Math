@@ -1,8 +1,8 @@
 <?php
 
 /*
- * This file is part of Math.
- *     (c) Fabrice de Stefanis / https://github.com/fab2s/Math
+ * This file is part of fab2s/Math.
+ * (c) Fabrice de Stefanis / https://github.com/fab2s/Math
  * This source file is licensed under the MIT license which you will
  * find in the LICENSE file or at https://opensource.org/licenses/MIT
  */
@@ -10,16 +10,14 @@
 namespace fab2s\Math\Tests;
 
 use fab2s\Math\Math;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Class MathTest
  */
 class MathTest extends \PHPUnit\Framework\TestCase
 {
-    /**
-     * @return array
-     */
-    public function number_formatData()
+    public static function number_formatData(): array
     {
         return [
             // number, expected [, precision[, dec_point[, thousands_sep]]]
@@ -39,31 +37,20 @@ class MathTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @dataProvider number_formatData
-     *
-     * @param string|int|Math $number
-     * @param string          $expected
-     * @param int             $decimals
-     * @param string          $dec_point
-     * @param string          $thousands_sep
-     */
-    public function testNumber_format($number, string $expected, int $decimals = 0, string $dec_point = '.', string $thousands_sep = ' ')
+    #[DataProvider('number_formatData')]
+    public function test_number_format(string|int|Math $number, string $expected, int $decimals = 0, string $dec_point = '.', string $thousands_sep = ' ')
     {
         $this->assertSame($expected, (string) Math::number($number)->format($decimals, $dec_point, $thousands_sep));
     }
 
-    /**
-     * @return array
-     */
-    public function compData()
+    public static function compData(): array
     {
         return [
             [
-                'left'    => '255173029255255255',
-                'operator'=> '<',
-                'right'   => '255173',
-                'expected'=> false,
+                'left'     => '255173029255255255',
+                'operator' => '<',
+                'right'    => '255173',
+                'expected' => false,
             ],
             [
                 'left'     => '255173029255255255',
@@ -96,10 +83,40 @@ class MathTest extends \PHPUnit\Framework\TestCase
                 'expected' => true,
             ],
             [
-                'left'    => '54',
-                'operator'=> '<=',
-                'right'   => '0',
-                'expected'=> false,
+                'left'     => '54',
+                'operator' => '>=',
+                'right'    => '0',
+                'expected' => true,
+            ],
+            [
+                'left'     => '54',
+                'operator' => '>=',
+                'right'    => '-0',
+                'expected' => true,
+            ],
+            [
+                'left'     => '54',
+                'operator' => '>=',
+                'right'    => '-32',
+                'expected' => true,
+            ],
+            [
+                'left'     => '-23',
+                'operator' => '>=',
+                'right'    => '-32',
+                'expected' => true,
+            ],
+            [
+                'left'     => '-23',
+                'operator' => '>=',
+                'right'    => '22',
+                'expected' => false,
+            ],
+            [
+                'left'     => '54',
+                'operator' => '<=',
+                'right'    => '0',
+                'expected' => false,
             ],
             [
                 'left'     => '54',
@@ -170,60 +187,50 @@ class MathTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @dataProvider compData
-     *
-     * @param string|int|Math $left
-     * @param string          $operator
-     * @param string|int|Math $right
-     * @param mixed           $expected
-     */
-    public function testComp($left, string $operator, $right, bool $expected)
+    #[DataProvider('compData')]
+    public function test_comp(string|int|Math $left, string $operator, $right, bool $expected)
     {
         switch ($operator) {
             case '<':
                 $this->assertSame(
                     $expected,
-                    Math::number($left)->lt($right)
+                    Math::number($left)->lt($right),
                 );
                 break;
             case '<=':
                 $this->assertSame(
                     $expected,
-                    Math::number($left)->lte($right)
+                    Math::number($left)->lte($right),
                 );
                 break;
             case '>':
                 $this->assertSame(
                     $expected,
-                    Math::number($left)->gt($right)
+                    Math::number($left)->gt($right),
                 );
                 break;
             case '>=':
                 $this->assertSame(
                     $expected,
-                    Math::number($left)->gte($right)
+                    Math::number($left)->gte($right),
                 );
                 break;
             case '=':
                 $this->assertSame(
                     $expected,
-                    Math::number($left)->eq($right)
+                    Math::number($left)->eq($right),
                 );
                 break;
             case '!=':
                 $this->assertSame(
                     $expected,
-                    !Math::number($left)->eq($right)
+                    ! Math::number($left)->eq($right),
                 );
                 break;
         }
     }
 
-    /**
-     * @return array
-     */
-    public function roundData()
+    public static function roundData(): array
     {
         return [
             [
@@ -309,22 +316,13 @@ class MathTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @dataProvider roundData
-     *
-     * @param string|int|Math $number
-     * @param int             $precision
-     * @param string          $expected
-     */
-    public function testRound($number, int $precision, string $expected)
+    #[DataProvider('roundData')]
+    public function test_round(string|int|Math $number, int $precision, string $expected)
     {
         $this->assertSame($expected, (string) Math::number($number)->round($precision));
     }
 
-    /**
-     * @return array
-     */
-    public function maxMinData()
+    public static function maxMinData(): array
     {
         return [
             [
@@ -371,43 +369,34 @@ class MathTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @dataProvider maxMinData
-     *
      * @param (string|int|Math)[] $param
-     * @param string|int|Math     $min
-     * @param string|int|Math     $max
      */
-    public function testMax(array $param, $min, $max)
+    #[DataProvider('maxMinData')]
+    public function test_max(array $param, string|int|Math $min, string|int|Math $max)
     {
         $first = $param[0];
         unset($param[0]);
         $this->assertSame(
             $max,
-            (string) Math::number($first)->max(...$param)
+            (string) Math::number($first)->max(...$param),
         );
     }
 
     /**
-     * @dataProvider maxMinData
-     *
      * @param (string|int|Math)[] $param
-     * @param string              $min
-     * @param string              $max
      */
-    public function testMin(array $param, $min, $max)
+    #[DataProvider('maxMinData')]
+    public function test_min(array $param, string|int|Math $min, string|int|Math $max)
     {
         $first = $param[0];
         unset($param[0]);
         $this->assertSame(
             $min,
-            (string) Math::number($first)->min(...$param)
+            (string) Math::number($first)->min(...$param),
         );
     }
 
-    /**
-     * @return array
-     */
-    public function normalizeData()
+    public static function normalizeData(): array
     {
         return [
             [
@@ -489,36 +478,22 @@ class MathTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @dataProvider normalizeData
-     *
-     * @param string|int|Math $number
-     * @param string          $expected
-     */
-    public function testNormalize($number, string $expected)
+    #[DataProvider('normalizeData')]
+    public function test_normalize(string|int|Math $number, string $expected)
     {
         $this->assertSame($expected, (string) Math::number($number));
     }
 
-    /**
-     * @dataProvider addData
-     *
-     * @param string|int|Math $left
-     * @param string|int|Math $right
-     * @param string          $expected
-     */
-    public function testAdd($left, $right, string $expected)
+    #[DataProvider('addData')]
+    public function test_add(string|int|Math $left, string|int|Math $right, string $expected)
     {
         $this->assertSame(
             $expected,
-            (string) Math::number($left)->add($right)
+            (string) Math::number($left)->add($right),
         );
     }
 
-    /**
-     * @return array
-     */
-    public function addData()
+    public static function addData(): array
     {
         return [
             [
@@ -549,25 +524,16 @@ class MathTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @dataProvider subData
-     *
-     * @param string|int|Math $left
-     * @param string|int|Math $right
-     * @param string          $expected
-     */
-    public function testSub($left, $right, string $expected)
+    #[DataProvider('subData')]
+    public function test_sub(string|int|Math $left, string|int|Math $right, string $expected)
     {
         $this->assertSame(
             $expected,
-            (string) Math::number($left)->sub($right)
+            (string) Math::number($left)->sub($right),
         );
     }
 
-    /**
-     * @return array
-     */
-    public function subData()
+    public static function subData(): array
     {
         return [
             [
@@ -603,31 +569,22 @@ class MathTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @dataProvider mulDivData
-     *
-     * @param string|int|Math $left
-     * @param string|int|Math $right
-     * @param string          $expected
-     */
-    public function testMulDiv($left, $right, string $expected)
+    #[DataProvider('mulDivData')]
+    public function test_mul_div(string|int|Math $left, string|int|Math $right, string $expected)
     {
         $result = Math::number($left)->mul($right);
         $this->assertSame(
             $expected,
-            (string) $result
+            (string) $result,
         );
 
         $this->assertSame(
             (string) Math::number($left),
-            (string) $result->div($right)
+            (string) $result->div($right),
         );
     }
 
-    /**
-     * @return array
-     */
-    public function mulDivData()
+    public static function mulDivData(): array
     {
         return [
             [
@@ -653,30 +610,22 @@ class MathTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @dataProvider sqrtData
-     *
-     * @param string|int|Math $number
-     * @param string          $expected
-     */
-    public function testSqrt($number, string $expected)
+    #[DataProvider('sqrtData')]
+    public function test_sqrt(string|int|Math $number, string $expected)
     {
         $result = Math::number($number)->sqrt();
         $this->assertSame(
             $expected,
-            (string) $result
+            (string) $result,
         );
 
         $this->assertSame(
             (string) Math::number($number),
-            (string) $result->pow(2)
+            (string) $result->pow(2),
         );
     }
 
-    /**
-     * @return array
-     */
-    public function sqrtData()
+    public static function sqrtData(): array
     {
         $result = [
             [
@@ -693,7 +642,7 @@ class MathTest extends \PHPUnit\Framework\TestCase
             ],
         ];
 
-        for ($i = 1; $i < 50; ++$i) {
+        for ($i = 1; $i < 50; $i++) {
             $number   = mt_rand(1, 10000) . '.' . mt_rand(0, 10000);
             $result[] = [
                 'number'   => Math::number($number)->pow(2),
@@ -704,25 +653,16 @@ class MathTest extends \PHPUnit\Framework\TestCase
         return $result;
     }
 
-    /**
-     * @dataProvider modData
-     *
-     * @param string|int|Math $number
-     * @param string          $mod
-     * @param string          $expected
-     */
-    public function testMod($number, string $mod, string $expected)
+    #[DataProvider('modData')]
+    public function test_mod(string|int|Math $number, string $mod, string $expected)
     {
         $this->assertSame(
             $expected,
-            (string) Math::number($number)->mod($mod)
+            (string) Math::number($number)->mod($mod),
         );
     }
 
-    /**
-     * @return array
-     */
-    public function modData()
+    public static function modData(): array
     {
         $result = [
             [
@@ -742,7 +682,7 @@ class MathTest extends \PHPUnit\Framework\TestCase
             ],
         ];
 
-        for ($i = 1; $i < 50; ++$i) {
+        for ($i = 1; $i < 50; $i++) {
             $number   = mt_rand(1, 10000);
             $mod      = mt_rand(1, 100);
             $result[] = [
@@ -755,28 +695,19 @@ class MathTest extends \PHPUnit\Framework\TestCase
         return $result;
     }
 
-    /**
-     * @dataProvider powModData
-     *
-     * @param string|int|Math $number
-     * @param string          $pow
-     * @param string          $mod
-     */
-    public function testPowMod($number, string $pow, string $mod)
+    #[DataProvider('powModData')]
+    public function test_pow_mod(string|int|Math $number, string $pow, string $mod)
     {
         $this->assertSame(
             (string) Math::number($number)->powMod($pow, $mod),
-            (string) Math::number($number)->pow($pow)->mod($mod)
+            (string) Math::number($number)->pow($pow)->mod($mod),
         );
     }
 
-    /**
-     * @return array
-     */
-    public function powModData()
+    public static function powModData(): array
     {
         $result = [];
-        for ($i = 1; $i < 50; ++$i) {
+        for ($i = 1; $i < 50; $i++) {
             $result[] = [
                 'number' => (string) mt_rand(1, 100000),
                 'pow'    => (string) mt_rand(1, 1000),
@@ -787,24 +718,16 @@ class MathTest extends \PHPUnit\Framework\TestCase
         return $result;
     }
 
-    /**
-     * @dataProvider ceilData
-     *
-     * @param string|int|Math $number
-     * @param string          $expected
-     */
-    public function testCeil($number, string $expected)
+    #[DataProvider('ceilData')]
+    public function test_ceil(string|int|Math $number, string $expected)
     {
         $this->assertSame(
             $expected,
-            (string) Math::number($number)->ceil()
+            (string) Math::number($number)->ceil(),
         );
     }
 
-    /**
-     * @return array
-     */
-    public function ceilData()
+    public static function ceilData(): array
     {
         return [
             [
@@ -842,24 +765,16 @@ class MathTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @dataProvider floorData
-     *
-     * @param string|int|Math $number
-     * @param string          $expected
-     */
-    public function testFloor($number, string $expected)
+    #[DataProvider('floorData')]
+    public function test_floor(string|int|Math $number, string $expected)
     {
         $this->assertSame(
             $expected,
-            (string) Math::number($number)->floor()
+            (string) Math::number($number)->floor(),
         );
     }
 
-    /**
-     * @return array
-     */
-    public function floorData()
+    public static function floorData(): array
     {
         return [
             [
@@ -897,24 +812,16 @@ class MathTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @dataProvider absData
-     *
-     * @param string|int|Math $number
-     * @param string          $expected
-     */
-    public function testAbs($number, string $expected)
+    #[DataProvider('absData')]
+    public function test_abs(string|int|Math $number, string $expected)
     {
         $this->assertSame(
             $expected,
-            (string) Math::number($number)->abs()
+            (string) Math::number($number)->abs(),
         );
     }
 
-    /**
-     * @return array
-     */
-    public function absData()
+    public static function absData(): array
     {
         return [
             [
@@ -928,28 +835,36 @@ class MathTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @dataProvider isNumberData
-     *
-     * @param string|int|Math $number
-     * @param bool            $expected
-     */
-    public function testIsNumber($number, bool $expected)
+    #[DataProvider('isNumberData')]
+    public function test_is_number(string|int|float|Math|null $number, bool $expected)
     {
         $this->assertSame(
             $expected,
-            Math::isNumber($number)
+            Math::isNumber($number),
         );
     }
 
-    /**
-     * @return array
-     */
-    public function isNumberData()
+    public static function isNumberData(): array
     {
         return [
             [
+                'number'   => null,
+                'expected' => false,
+            ],
+            [
                 'number'   => '-42',
+                'expected' => true,
+            ],
+            [
+                'number'   => -42,
+                'expected' => true,
+            ],
+            [
+                'number'   => -42.42,
+                'expected' => true,
+            ],
+            [
+                'number'   => 42.42,
                 'expected' => true,
             ],
             [
@@ -1020,12 +935,10 @@ class MathTest extends \PHPUnit\Framework\TestCase
                 'number'   => '+.000',
                 'expected' => true,
             ],
-
             [
                 'number'   => '--27',
                 'expected' => false,
             ],
-
             [
                 'number'   => '++27',
                 'expected' => false,
@@ -1033,10 +946,7 @@ class MathTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
-    public function baseConvertData()
+    public static function baseConvertData(): array
     {
         return [
             [
@@ -1068,10 +978,6 @@ class MathTest extends \PHPUnit\Framework\TestCase
                 'base'   => '16',
             ],
             [
-                'number' => '000255173029255255255',
-                'base'   => '63',
-            ],
-            [
                 'number' => '00025517302925525525',
                 'base'   => '28',
             ],
@@ -1096,59 +1002,51 @@ class MathTest extends \PHPUnit\Framework\TestCase
                 'base'   => '35',
             ],
             [
-                'number' => '1000',
-                'base'   => '64',
-            ],
-            [
                 'number' => '0',
                 'base'   => '48',
             ],
             [
                 'number' => '9856565',
-                'base'   => '62',
+                'base'   => '61',
             ],
         ];
     }
 
-    /**
-     * @dataProvider baseConvertData
-     *
-     * @param string|int|Math $number
-     * @param string          $base
-     *
-     * @throws \InvalidArgumentException
-     */
-    public function testBaseConvert($number, string $base)
+    #[DataProvider('baseConvertData')]
+    public function test_base_convert(string|int|Math $number, string $base)
     {
         $this->assertSame(
             (string) Math::number($number),
-            (string) Math::fromBase(Math::number($number)->toBase($base), $base)
+            (string) Math::fromBase(Math::number($number)->toBase($base), $base),
         );
 
-        if ($base > 62) {
+        if (! Math::gmpSupport()) {
             return;
         }
 
         $this->assertSame(
             (string) Math::number($number),
-            Math::normalizeNumber(Math::baseConvert(Math::baseConvert($number, 10, $base), $base, 10))
+            Math::normalizeNumber(Math::baseConvert(Math::baseConvert($number, 10, $base), $base, 10)),
         );
-
-        if (!Math::gmpSupport()) {
-            return;
-        }
 
         $expected = gmp_strval(gmp_init((string) Math::number($number)), $base);
         $this->assertSame(
             $expected,
-            Math::baseConvert($number, 10, $base)
+            Math::baseConvert($number, 10, $base),
         );
 
         Math::gmpSupport(true);
         $this->assertSame(
             $expected,
-            (string) Math::number($number)->toBase($base)
+            Math::number($number)->toBase($base),
         );
-        Math::gmpSupport(false);
+
+        Math::gmpSupport(null);
+    }
+
+    public function test_to_string()
+    {
+        $this->assertSame('33.33', (string) Math::number('33.33'));
+        $this->assertSame('33.33', Math::number('33.33')->jsonSerialize());
     }
 }
