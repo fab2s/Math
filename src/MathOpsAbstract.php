@@ -1,8 +1,8 @@
 <?php
 
 /*
- * This file is part of Math.
- *     (c) Fabrice de Stefanis / https://github.com/fab2s/Math
+ * This file is part of fab2s/Math.
+ * (c) Fabrice de Stefanis / https://github.com/fab2s/Math
  * This source file is licensed under the MIT license which you will
  * find in the LICENSE file or at https://opensource.org/licenses/MIT
  */
@@ -14,14 +14,7 @@ namespace fab2s\Math;
  */
 abstract class MathOpsAbstract extends MathBaseAbstract
 {
-    /**
-     * @param (string|int|static)[] $numbers
-     *
-     * @throws \InvalidArgumentException
-     *
-     * @return static
-     */
-    public function add(...$numbers): self
+    public function add(string|int|float|Math ...$numbers): static
     {
         foreach ($numbers as $number) {
             $this->number = bcadd($this->number, static::validateInputNumber($number), $this->precision);
@@ -30,14 +23,7 @@ abstract class MathOpsAbstract extends MathBaseAbstract
         return $this;
     }
 
-    /**
-     * @param (string|int|static)[] $numbers
-     *
-     * @throws \InvalidArgumentException
-     *
-     * @return static
-     */
-    public function sub(...$numbers): self
+    public function sub(string|int|float|Math ...$numbers): static
     {
         foreach ($numbers as $number) {
             $this->number = bcsub($this->number, static::validateInputNumber($number), $this->precision);
@@ -46,14 +32,7 @@ abstract class MathOpsAbstract extends MathBaseAbstract
         return $this;
     }
 
-    /**
-     * @param (string|int|static)[] $numbers
-     *
-     * @throws \InvalidArgumentException
-     *
-     * @return static
-     */
-    public function mul(...$numbers): self
+    public function mul(string|int|float|Math ...$numbers): static
     {
         foreach ($numbers as $number) {
             $this->number = bcmul($this->number, static::validateInputNumber($number), $this->precision);
@@ -62,14 +41,7 @@ abstract class MathOpsAbstract extends MathBaseAbstract
         return $this;
     }
 
-    /**
-     * @param (string|int|static)[] $numbers
-     *
-     * @throws \InvalidArgumentException
-     *
-     * @return static
-     */
-    public function div(...$numbers): self
+    public function div(string|int|float|Math ...$numbers): static
     {
         foreach ($numbers as $number) {
             $this->number = bcdiv($this->number, static::validateInputNumber($number), $this->precision);
@@ -78,65 +50,35 @@ abstract class MathOpsAbstract extends MathBaseAbstract
         return $this;
     }
 
-    /**
-     * @return static
-     */
-    public function sqrt(): self
+    public function sqrt(): static
     {
         $this->number = bcsqrt($this->number, $this->precision);
 
         return $this;
     }
 
-    /**
-     * @param string|int $exponent
-     *
-     * @throws \InvalidArgumentException
-     *
-     * @return static
-     */
-    public function pow($exponent): self
+    public function pow(string|int $exponent): static
     {
         $this->number = bcpow($this->number, static::validatePositiveInteger($exponent), $this->precision);
 
         return $this;
     }
 
-    /**
-     * @param string|int $modulus
-     *
-     * @throws \InvalidArgumentException
-     *
-     * @return static
-     */
-    public function mod($modulus): self
+    public function mod(string|int $modulus): static
     {
         $this->number = bcmod($this->number, static::validatePositiveInteger($modulus));
 
         return $this;
     }
 
-    /**
-     * @param string|int $exponent
-     * @param string|int $modulus
-     *
-     * @throws \InvalidArgumentException
-     *
-     * @return static
-     */
-    public function powMod($exponent, $modulus): self
+    public function powMod(string|int $exponent, string|int $modulus): static
     {
         $this->number = bcpowmod($this->number, static::validatePositiveInteger($exponent), static::validatePositiveInteger($modulus));
 
         return $this;
     }
 
-    /**
-     * @param string|int $precision
-     *
-     * @return static
-     */
-    public function round($precision = 0): self
+    public function round(string|int $precision = 0): static
     {
         $precision = max(0, (int) $precision);
         if ($this->hasDecimals()) {
@@ -152,10 +94,7 @@ abstract class MathOpsAbstract extends MathBaseAbstract
         return $this;
     }
 
-    /**
-     * @return static
-     */
-    public function ceil(): self
+    public function ceil(): static
     {
         if ($this->hasDecimals()) {
             if ($this->isPositive()) {
@@ -170,10 +109,7 @@ abstract class MathOpsAbstract extends MathBaseAbstract
         return $this;
     }
 
-    /**
-     * @return static
-     */
-    public function floor(): self
+    public function floor(): static
     {
         if ($this->hasDecimals()) {
             if ($this->isPositive()) {
@@ -188,10 +124,7 @@ abstract class MathOpsAbstract extends MathBaseAbstract
         return $this;
     }
 
-    /**
-     * @return static
-     */
-    public function abs(): self
+    public function abs(): static
     {
         $this->number = ltrim($this->number, '-');
 
@@ -200,12 +133,8 @@ abstract class MathOpsAbstract extends MathBaseAbstract
 
     /**
      * returns the highest number among all arguments
-     *
-     * @param (string|int|static)[] $numbers
-     *
-     * @return static
      */
-    public function max(...$numbers): self
+    public function max(string|int|float|Math ...$numbers): static
     {
         foreach ($numbers as $number) {
             if (bccomp($number = static::validateInputNumber($number), $this->number, $this->precision) === 1) {
@@ -218,14 +147,8 @@ abstract class MathOpsAbstract extends MathBaseAbstract
 
     /**
      * returns the smallest number among all arguments
-     *
-     * @param (string|int|static)[] $numbers
-     *
-     * @throws \InvalidArgumentException
-     *
-     * @return static
      */
-    public function min(...$numbers): self
+    public function min(string|int|float|Math ...$numbers): static
     {
         foreach ($numbers as $number) {
             if (bccomp($number = static::validateInputNumber($number), $this->number, $this->precision) === -1) {
