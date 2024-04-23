@@ -1,6 +1,6 @@
 # Math
 
-[![Build Status](https://travis-ci.com/fab2s/Math.svg?branch=master)](https://travis-ci.com/fab2s/Math) [![Total Downloads](https://poser.pugx.org/fab2s/math/downloads)](//packagist.org/packages/fab2s/math) [![Monthly Downloads](https://poser.pugx.org/fab2s/math/d/monthly)](//packagist.org/packages/fab2s/math) [![Latest Stable Version](https://poser.pugx.org/fab2s/math/v/stable)](https://packagist.org/packages/fab2s/math) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/fab2s/Math/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/fab2s/Math/?branch=master) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com) [![License](https://poser.pugx.org/fab2s/math/license)](https://packagist.org/packages/fab2s/math)
+[![CI](https://github.com/fab2s/Math/actions/workflows/ci.yml/badge.svg)](https://github.com/fab2s/Math/actions/workflows/ci.yml) [![QA](https://github.com/fab2s/Math/actions/workflows/qa.yml/badge.svg)](https://github.com/fab2s/Math/actions/workflows/qa.yml) [![codecov](https://codecov.io/gh/fab2s/Math/graph/badge.svg?token=6JD33CQLE3)](https://codecov.io/gh/fab2s/Math) [![Total Downloads](https://poser.pugx.org/fab2s/math/downloads)](//packagist.org/packages/fab2s/math) [![Monthly Downloads](https://poser.pugx.org/fab2s/math/d/monthly)](//packagist.org/packages/fab2s/math) [![Latest Stable Version](https://poser.pugx.org/fab2s/math/v/stable)](https://packagist.org/packages/fab2s/math) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com) [![License](https://poser.pugx.org/fab2s/math/license)](https://packagist.org/packages/fab2s/math)
 
 A fluent [bcmath](https://php.net/bcmath) based _Helper_ to handle high precision calculus in base 10 with a rather strict approach (want precision for something right?).
 It does not try to be smart and just fails without `bcmath`, but it does auto detect [GMP](https://php.net/GMP) for faster base conversions.
@@ -19,7 +19,7 @@ composer require "fab2s/math"
 
 ## Prerequisites
 
-`Math` requires [bcmath](https://php.net/bcmath), [GMP](https://php.net/GMP) is auto detected and used when available for faster base conversions (up to 62). 
+`Math` requires [bcmath](https://php.net/bcmath), [GMP](https://php.net/GMP) is auto-detected and used when available for faster base conversions (up to 62). 
 
 ## In practice
 
@@ -109,8 +109,8 @@ Doing so is actually faster than casting a pre-existing instance to string becau
 
 Arguments should be string or `Math`, but it is _ok_ to use integers up to `INT_(32|64)`. 
 
-**DO NOT** use `floats` as casting them to `string` may result in local dependent format, such as using a coma instead of a dot for decimals or just turn them exponential notation which is not supported by bcmath.
-The way floats are handled in general and by PHP in particular is the very the reason why `bcmath` exists, so even if you trust your locale settings, using floats still kinda defeats the purpose of using such lib.
+**YOU SHOULD NOT** use `floats` as casting them to `string` may result in local dependent format, such as using a coma instead of a dot for decimals or just turn them exponential notation which is not supported by bcmath.
+The way floats are handled in general and by PHP in particular is the very reason why `bcmath` exists, so even if you trust your locale settings, using floats still kinda defeats the purpose of using such lib.
 
 ## Internal precision
 
@@ -126,9 +126,35 @@ $number = (new Math('100'))->div('3'); // uses precision 18
 $number->setPrecision(14); // will use precision 14 for any further calculations
 ```
 
+## Laravel
+
+For those using [Laravel](https://laravel.com/), `Math` comes with a Laravel caster: [MathCaster](./src/Laravel/MathCast.php) which you can use to directly cast your model properties.
+
+````php
+use fab2s\Math\Laravel\MathCast;
+
+class MyModel extends Model
+{
+    protected $casts   = [
+        'not_nullable' => MathCast::class,
+        'nullable'     => MathCast::class . ':nullable',
+    ];
+}
+
+$model = new MyModel;
+
+$model->not_nullable = 41;
+$model->not_nullable->add(1)->eq(42); // true
+
+$model->not_nullable = null; // throw a NotNullableException
+
+$model->nullabe = null; // is ok
+
+````
+
 ## Requirements
 
-`Math` is tested against php 7.1, 7.2, 7.3, 7.4 and 8.0
+`Math` is tested against php 8.1 and 8.2. Additionally, MathCast is tested against Laravel 10 and 11.
 
 ## Contributing
 
