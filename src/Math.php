@@ -21,6 +21,7 @@ class Math extends MathOpsAbstract implements JsonSerializable, Stringable
     public function __construct(string|int|float|Math $number)
     {
         if (isset(static::$globalPrecision)) {
+            /* @codeCoverageIgnore */
             $this->precision = static::$globalPrecision;
         }
 
@@ -43,26 +44,26 @@ class Math extends MathOpsAbstract implements JsonSerializable, Stringable
     }
 
     /**
-     * convert any based value bellow or equals to 64 to its decimal value
+     * convert any based value bellow or equals to 62 to its decimal value
      */
-    public static function fromBase(string|int $number, int $base): static
+    public static function fromBase(string $number, int $base): static
     {
-        // trim base 64 padding char, only positive
-        $number = trim($number, ' =-');
+        // only positive
+        $number = trim($number, ' -');
         if ($number === '' || str_contains($number, '.')) {
             throw new InvalidArgumentException('Argument number is not an integer');
         }
 
         $baseChar = static::getBaseChar($base);
+        // By now we know we have a correct base and number
         if (trim($number, $baseChar[0]) === '') {
             return new static('0');
         }
 
-        if (static::$gmpSupport && $base <= 62) {
+        if (static::$gmpSupport) {
             return new static(static::baseConvert($number, $base, 10));
         }
 
-        // By now we know we have a correct base and number
         return new static(static::bcDec2Base($number, $base, $baseChar));
     }
 
@@ -92,7 +93,7 @@ class Math extends MathOpsAbstract implements JsonSerializable, Stringable
     }
 
     /**
-     * convert decimal value to any other base bellow or equals to 64
+     * convert decimal value to any other base bellow or equals to 62
      */
     public function toBase(string|int $base): string
     {
@@ -100,9 +101,11 @@ class Math extends MathOpsAbstract implements JsonSerializable, Stringable
             throw new InvalidArgumentException('Argument number is not an integer');
         }
 
+        static::validateBase($base = (int) static::validatePositiveInteger($base));
+
         // do not mutate, only support positive integers
         $number = ltrim((string) $this, '-');
-        if (static::$gmpSupport && $base <= 62) {
+        if (static::$gmpSupport) {
             return static::baseConvert($number, 10, $base);
         }
 

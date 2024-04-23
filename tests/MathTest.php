@@ -11,12 +11,59 @@ namespace fab2s\Math\Tests;
 
 use fab2s\Math\Math;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Class MathTest
  */
-class MathTest extends \PHPUnit\Framework\TestCase
+class MathTest extends TestCase
 {
+    public function test_precision()
+    {
+        $this->assertSame(
+            '42.42',
+            (string) Math::number(42.42)
+                ->setPrecision(2)
+                ->add('0.0042'),
+        );
+
+        $this->assertSame(
+            '42.4242',
+            (string) Math::number(42.42)
+                ->add('0.0042'),
+        );
+
+        Math::setGlobalPrecision(2);
+
+        $this->assertSame(
+            '42.42',
+            (string) Math::number(42.42)
+                ->add('0.0042'),
+        );
+
+        Math::setGlobalPrecision(Math::PRECISION);
+
+        $this->assertSame(
+            '42.4242',
+            (string) Math::number(42.42)
+                ->add('0.0042'),
+        );
+    }
+
+    public function test_json_serialize()
+    {
+        $number = Math::number(42);
+        $this->assertSame((string) $number, $number->jsonSerialize());
+
+        $this->assertSame(json_encode((string) $number), json_encode(Math::number(42)));
+    }
+
+    public function test_normalize_number()
+    {
+        $this->assertSame('42', Math::normalizeNumber('000042.0000'));
+        $this->assertSame('42', Math::normalizeNumber(null, 42));
+    }
+
     public static function number_formatData(): array
     {
         return [
@@ -1039,6 +1086,11 @@ class MathTest extends \PHPUnit\Framework\TestCase
         $this->assertSame(
             $expected,
             Math::number($number)->toBase($base),
+        );
+
+        $this->assertSame(
+            (string) Math::number($number),
+            (string) Math::fromBase(Math::number($number)->toBase($base), $base),
         );
 
         Math::gmpSupport(null);

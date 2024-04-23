@@ -22,11 +22,6 @@ abstract class MathBaseAbstract
     const PRECISION = 9;
 
     /**
-     * base <= 64 charlist
-     */
-    const BASECHAR_64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-
-    /**
      * base <= 62 char list
      */
     const BASECHAR_62 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -39,17 +34,16 @@ abstract class MathBaseAbstract
     /**
      * highest base supported
      */
-    const BASE_MAX = 64;
+    const BASE_MAX = 62;
 
     /**
-     * base char cache for all supported bases (bellow 64)
+     * base char cache for all supported bases (up to 62)
      *
      * @var array<int,string>
      */
     protected static array $baseChars = [
         36 => self::BASECHAR_36,
         62 => self::BASECHAR_62,
-        64 => self::BASECHAR_64,
     ];
 
     /**
@@ -130,7 +124,7 @@ abstract class MathBaseAbstract
     /**
      * Validation flavour of normalization logic
      */
-    public static function normalizeNumber(string|int|float|Math $number, string|int|null $default = null): ?string
+    public static function normalizeNumber(string|int|float|Math|null $number, Math|string|int|float|null $default = null): ?string
     {
         if (! static::isNumber($number)) {
             return $default;
@@ -146,10 +140,6 @@ abstract class MathBaseAbstract
         }
 
         static::validateBase($base = (int) static::validatePositiveInteger($base));
-
-        if ($base > 62) {
-            return static::$baseChars[$base] = substr(static::BASECHAR_64, 0, $base);
-        }
 
         if ($base > 36) {
             return static::$baseChars[$base] = substr(static::BASECHAR_62, 0, $base);
@@ -194,12 +184,12 @@ abstract class MathBaseAbstract
      */
     protected static function validateBase(int $base): void
     {
-        if ($base < 2 || $base > self::BASE_MAX || ! static::gmpSupport() && $base > 62) {
-            throw new InvalidArgumentException('Argument base is not valid, base 2 to ' . (static::gmpSupport() ? 64 : 62) . ' are supported');
+        if ($base < 2 || $base > self::BASE_MAX) {
+            throw new InvalidArgumentException('Argument base is not valid, base 2 to ' . self::BASE_MAX . ' are supported');
         }
     }
 
-    protected static function bcDec2Base(string|int $number, string|int $base, string $baseChar): string
+    protected static function bcDec2Base(string $number, int $base, string $baseChar): string
     {
         $result    = '';
         $numberLen = strlen($number);
