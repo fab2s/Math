@@ -18,7 +18,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 
 class MathCastTest extends TestCase
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         // Turn on error reporting
         error_reporting(E_ALL);
