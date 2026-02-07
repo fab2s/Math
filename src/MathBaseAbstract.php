@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of fab2s/Math.
  * (c) Fabrice de Stefanis / https://github.com/fab2s/Math
@@ -56,6 +58,8 @@ abstract class MathBaseAbstract
      */
     protected static int $staticPrecision = self::PRECISION;
     protected static ?bool $gmpSupport    = null;
+
+    /** @var numeric-string */
     protected string $number;
 
     /**
@@ -63,6 +67,7 @@ abstract class MathBaseAbstract
      */
     protected int $precision = self::PRECISION;
 
+    /** @return numeric-string */
     public function getNumber(): string
     {
         return $this->number;
@@ -80,16 +85,23 @@ abstract class MathBaseAbstract
 
     public function normalize(): static
     {
-        $this->number = static::normalizeReal($this->number);
+        $result         = $this->mutate();
+        $result->number = static::normalizeReal($result->number);
 
-        return $this;
+        return $result;
     }
 
     public function setPrecision(string|int $precision): static
     {
         // even INT_32 should be enough precision
-        $this->precision = max(0, (int) $precision);
+        $result            = $this->mutate();
+        $result->precision = max(0, (int) $precision);
 
+        return $result;
+    }
+
+    protected function mutate(): static
+    {
         return $this;
     }
 
@@ -127,7 +139,7 @@ abstract class MathBaseAbstract
     public static function normalizeNumber(string|int|float|Math|null $number, Math|string|int|float|null $default = null): ?string
     {
         if (! static::isNumber($number)) {
-            return $default;
+            return $default !== null ? (string) $default : null;
         }
 
         return static::normalizeReal((string) $number);
@@ -157,15 +169,18 @@ abstract class MathBaseAbstract
      */
     public static function baseConvert(string|int $number, string|int $fromBase = 10, string|int $toBase = 62): string
     {
-        return gmp_strval(gmp_init($number, $fromBase), $toBase);
+        return gmp_strval(gmp_init($number, (int) $fromBase), (int) $toBase);
     }
 
     /**
      * Normalize a valid real number
      * removes preceding / trailing 0 and +
+     *
+     * @return numeric-string
      */
     protected static function normalizeReal(string|int $number): string
     {
+        $number = (string) $number;
         $sign   = $number[0] === '-' ? '-' : '';
         $number = ltrim($number, '0+-');
 
@@ -176,6 +191,7 @@ abstract class MathBaseAbstract
             $number         = ($number ?: '0') . $dec;
         }
 
+        /** @var numeric-string */ // @phpstan-ignore varTag.nativeType
         return $number ? $sign . $number : '0';
     }
 
@@ -191,8 +207,9 @@ abstract class MathBaseAbstract
 
     protected static function bcDec2Base(string $number, int $base, string $baseChar): string
     {
-        $result    = '';
+        $result    = '0';
         $numberLen = strlen($number);
+        $base      = (string) $base;
         // Now loop through each digit in the number
         for ($i = $numberLen - 1; $i >= 0; $i--) {
             $char = $number[$i]; // extract the last char from the number
@@ -202,29 +219,33 @@ abstract class MathBaseAbstract
             }
 
             // Now convert the value+position to decimal
-            $result = bcadd($result, bcmul($ord, bcpow($base, ($numberLen - $i - 1))));
+            $result = bcadd($result, bcmul((string) $ord, bcpow($base, (string) ($numberLen - $i - 1))));
         }
 
-        return $result ? $result : '0';
+        return $result;
     }
 
+    /** @return numeric-string */
     protected static function validateInputNumber(string|int|float|Math $number): string
     {
-        if ($number instanceof static) {
+        if ($number instanceof self) {
             return $number->getNumber();
         }
 
-        $number = trim($number);
+        $number = trim((string) $number);
         if (! static::isNumber($number)) {
             throw new InvalidArgumentException('Argument number is not valid');
         }
 
+        /** @var numeric-string */
         return $number;
     }
 
     /**
      * @param string|int $integer up to INT_32|64 since it's only used for things
      *                            like exponents, it should be enough
+     *
+     * @return numeric-string
      */
     protected static function validatePositiveInteger(string|int $integer): string
     {

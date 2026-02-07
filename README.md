@@ -6,6 +6,7 @@
 [![Latest Stable Version](https://poser.pugx.org/fab2s/math/v/stable)](https://packagist.org/packages/fab2s/math)
 [![Total Downloads](https://poser.pugx.org/fab2s/math/downloads)](https://packagist.org/packages/fab2s/math)
 [![Monthly Downloads](https://poser.pugx.org/fab2s/math/d/monthly)](https://packagist.org/packages/fab2s/math)
+[![PHPStan](https://img.shields.io/badge/PHPStan-level%209-brightgreen.svg?style=flat)](https://phpstan.org)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com)
 [![License](https://poser.pugx.org/fab2s/math/license)](https://packagist.org/packages/fab2s/math)
 
@@ -53,7 +54,7 @@ $result = Math::number('100')
 echo $result; // '42'
 ```
 
-> **Important:** Math instances are **mutable**. Operations modify the instance in place and return `$this` for chaining. To preserve the original value, wrap it in a new instance:
+> **Important:** `Math` instances are **mutable**. Operations modify the instance in place and return `$this` for chaining. To preserve the original value, use `MathImmutable` or wrap it in a new instance:
 >
 > ```php
 > $original = Math::number('100');
@@ -63,6 +64,24 @@ echo $result; // '42'
 > $original = Math::number('100');
 > $modified = Math::number($original)->add('50'); // $original stays '100'
 > ```
+
+### Immutable Variant
+
+`MathImmutable` provides the same API but every operation returns a new instance, leaving the original unchanged:
+
+```php
+use fab2s\Math\MathImmutable;
+
+$a = MathImmutable::number('100');
+$b = $a->add('50');   // $a is still '100', $b is '150'
+$c = $b->mul('2');    // $b is still '150', $c is '300'
+
+// Works everywhere Math is accepted
+function calculateTax(Math $price): Math { /* ... */ }
+calculateTax($a); // MathImmutable extends Math
+```
+
+`MathImmutable` extends `Math`, so it inherits all factory methods (`number()`, `make()`, `fromBase()`) and is accepted anywhere `Math` is type-hinted. The overhead is a single `clone` per operation (two properties: a string and an int).
 
 ### Strict Validation
 
@@ -216,9 +235,12 @@ $order->total = null;     // Throws NotNullableException
 
 | Method | Description |
 |--------|-------------|
-| `Math::number($n)` | Create instance from number |
+| `Math::number($n)` | Create mutable instance |
+| `Math::make($n)` | Alias for `number()` |
 | `Math::fromBase($n, $base)` | Create from base 2-62 |
-| `new Math($n, $precision)` | Constructor with optional precision |
+| `MathImmutable::number($n)` | Create immutable instance |
+| `MathImmutable::make($n)` | Alias for `number()` |
+| `MathImmutable::fromBase($n, $base)` | Create immutable from base 2-62 |
 
 ### Arithmetic
 

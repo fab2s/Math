@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of fab2s/Math.
  * (c) Fabrice de Stefanis / https://github.com/fab2s/Math
@@ -16,119 +18,133 @@ abstract class MathOpsAbstract extends MathBaseAbstract
 {
     public function add(string|int|float|Math ...$numbers): static
     {
+        $result = $this->mutate();
         foreach ($numbers as $number) {
-            $this->number = bcadd($this->number, static::validateInputNumber($number), $this->precision);
+            $result->number = bcadd($result->number, static::validateInputNumber($number), $result->precision);
         }
 
-        return $this;
+        return $result;
     }
 
     public function sub(string|int|float|Math ...$numbers): static
     {
+        $result = $this->mutate();
         foreach ($numbers as $number) {
-            $this->number = bcsub($this->number, static::validateInputNumber($number), $this->precision);
+            $result->number = bcsub($result->number, static::validateInputNumber($number), $result->precision);
         }
 
-        return $this;
+        return $result;
     }
 
     public function mul(string|int|float|Math ...$numbers): static
     {
+        $result = $this->mutate();
         foreach ($numbers as $number) {
-            $this->number = bcmul($this->number, static::validateInputNumber($number), $this->precision);
+            $result->number = bcmul($result->number, static::validateInputNumber($number), $result->precision);
         }
 
-        return $this;
+        return $result;
     }
 
     public function div(string|int|float|Math ...$numbers): static
     {
+        $result = $this->mutate();
         foreach ($numbers as $number) {
-            $this->number = bcdiv($this->number, static::validateInputNumber($number), $this->precision);
+            $result->number = bcdiv($result->number, static::validateInputNumber($number), $result->precision);
         }
 
-        return $this;
+        return $result;
     }
 
     public function sqrt(): static
     {
-        $this->number = bcsqrt($this->number, $this->precision);
+        $result         = $this->mutate();
+        $result->number = bcsqrt($result->number, $result->precision);
 
-        return $this;
+        return $result;
     }
 
     public function pow(string|int $exponent): static
     {
-        $this->number = bcpow($this->number, static::validatePositiveInteger($exponent), $this->precision);
+        $result         = $this->mutate();
+        $result->number = bcpow($result->number, static::validatePositiveInteger($exponent), $result->precision);
 
-        return $this;
+        return $result;
     }
 
     public function mod(string|int $modulus): static
     {
-        $this->number = bcmod($this->number, static::validatePositiveInteger($modulus));
+        $result         = $this->mutate();
+        $result->number = bcmod($result->number, static::validatePositiveInteger($modulus));
 
-        return $this;
+        return $result;
     }
 
     public function powMod(string|int $exponent, string|int $modulus): static
     {
-        $this->number = bcpowmod($this->number, static::validatePositiveInteger($exponent), static::validatePositiveInteger($modulus));
+        $result         = $this->mutate();
+        $result->number = bcpowmod($result->number, static::validatePositiveInteger($exponent), static::validatePositiveInteger($modulus));
 
-        return $this;
+        return $result;
     }
 
     public function round(string|int $precision = 0): static
     {
         $precision = max(0, (int) $precision);
-        if ($this->hasDecimals()) {
-            if ($this->isPositive()) {
-                $this->number = bcadd($this->number, '0.' . str_repeat('0', $precision) . '5', $precision);
+        $result    = $this->mutate();
+        if ($result->hasDecimals()) {
+            /** @var numeric-string $offset */ // @phpstan-ignore varTag.nativeType
+            $offset = '0.' . str_repeat('0', $precision) . '5';
+            if ($result->isPositive()) {
+                $result->number = bcadd($result->number, $offset, $precision);
 
-                return $this;
+                return $result;
             }
 
-            $this->number = bcsub($this->number, '0.' . str_repeat('0', $precision) . '5', $precision);
+            $result->number = bcsub($result->number, $offset, $precision);
         }
 
-        return $this;
+        return $result;
     }
 
     public function ceil(): static
     {
-        if ($this->hasDecimals()) {
-            if ($this->isPositive()) {
-                $this->number = bcadd($this->number, (preg_match('`\.[0]*$`', $this->number) ? '0' : '1'), 0);
+        $result = $this->mutate();
+        if ($result->hasDecimals()) {
+            if ($result->isPositive()) {
+                $result->number = bcadd($result->number, (preg_match('`\.[0]*$`', $result->number) ? '0' : '1'), 0);
 
-                return $this;
+                return $result;
             }
 
-            $this->number = bcsub($this->number, '0', 0);
+            $result->number = bcsub($result->number, '0', 0);
         }
 
-        return $this;
+        return $result;
     }
 
     public function floor(): static
     {
-        if ($this->hasDecimals()) {
-            if ($this->isPositive()) {
-                $this->number = bcadd($this->number, 0, 0);
+        $result = $this->mutate();
+        if ($result->hasDecimals()) {
+            if ($result->isPositive()) {
+                $result->number = bcadd($result->number, '0', 0);
 
-                return $this;
+                return $result;
             }
 
-            $this->number = bcsub($this->number, (preg_match('`\.[0]*$`', $this->number) ? '0' : '1'), 0);
+            $result->number = bcsub($result->number, (preg_match('`\.[0]*$`', $result->number) ? '0' : '1'), 0);
         }
 
-        return $this;
+        return $result;
     }
 
     public function abs(): static
     {
-        $this->number = ltrim($this->number, '-');
+        $result         = $this->mutate();
+        $result->number = ltrim($result->number, '-');
 
-        return $this;
+        return $result;
     }
 
     /**
@@ -136,13 +152,14 @@ abstract class MathOpsAbstract extends MathBaseAbstract
      */
     public function max(string|int|float|Math ...$numbers): static
     {
+        $result = $this->mutate();
         foreach ($numbers as $number) {
-            if (bccomp($number = static::validateInputNumber($number), $this->number, $this->precision) === 1) {
-                $this->number = $number;
+            if (bccomp($number = static::validateInputNumber($number), $result->number, $result->precision) === 1) {
+                $result->number = $number;
             }
         }
 
-        return $this;
+        return $result;
     }
 
     /**
@@ -150,12 +167,13 @@ abstract class MathOpsAbstract extends MathBaseAbstract
      */
     public function min(string|int|float|Math ...$numbers): static
     {
+        $result = $this->mutate();
         foreach ($numbers as $number) {
-            if (bccomp($number = static::validateInputNumber($number), $this->number, $this->precision) === -1) {
-                $this->number = $number;
+            if (bccomp($number = static::validateInputNumber($number), $result->number, $result->precision) === -1) {
+                $result->number = $number;
             }
         }
 
-        return $this;
+        return $result;
     }
 }

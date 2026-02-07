@@ -44,7 +44,7 @@ class MathCastTest extends TestCase
                 $this->expectException(NotNullableException::class);
                 $cast->get(new CastModel, 'key', $value, []);
                 break;
-            case $expected === null:
+            default:
                 $this->assertNull($cast->get(new CastModel, 'key', $value, []));
                 break;
         }
@@ -69,7 +69,7 @@ class MathCastTest extends TestCase
                 $this->expectException(NotNullableException::class);
                 $cast->set(new CastModel, 'key', $value, []);
                 break;
-            case $expected === null:
+            default:
                 $this->assertSame(null, $cast->set(new CastModel, 'key', $value, []));
                 break;
         }

@@ -998,69 +998,69 @@ class MathTest extends TestCase
         return [
             [
                 'number' => '0',
-                'base'   => '62',
+                'base'   => 62,
             ],
             [
                 'number' => '0',
-                'base'   => '36',
+                'base'   => 36,
             ],
             [
                 'number' => '10',
-                'base'   => '62',
+                'base'   => 62,
             ],
             [
                 'number' => '10',
-                'base'   => '36',
+                'base'   => 36,
             ],
             [
                 'number' => '62',
-                'base'   => '62',
+                'base'   => 62,
             ],
             [
                 'number' => '36',
-                'base'   => '36',
+                'base'   => 36,
             ],
             [
                 'number' => '000255173029255255255',
-                'base'   => '16',
+                'base'   => 16,
             ],
             [
                 'number' => '00025517302925525525',
-                'base'   => '28',
+                'base'   => 28,
             ],
             [
                 'number' => '000255173029255255255',
-                'base'   => '8',
+                'base'   => 8,
             ],
             [
                 'number' => '000255173029255255255',
-                'base'   => '36',
+                'base'   => 36,
             ],
             [
                 'number' => '255173029255255255',
-                'base'   => '2',
+                'base'   => 2,
             ],
             [
                 'number' => '25517993029255255255',
-                'base'   => '37',
+                'base'   => 37,
             ],
             [
                 'number' => '25517993029255255255',
-                'base'   => '35',
+                'base'   => 35,
             ],
             [
                 'number' => '0',
-                'base'   => '48',
+                'base'   => 48,
             ],
             [
                 'number' => '9856565',
-                'base'   => '61',
+                'base'   => 61,
             ],
         ];
     }
 
     #[DataProvider('baseConvertData')]
-    public function test_base_convert(string|int|Math $number, string $base)
+    public function test_base_convert(string|int|Math $number, int $base)
     {
         $this->assertSame(
             (string) Math::number($number),

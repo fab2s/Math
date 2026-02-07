@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of fab2s/Math.
  * (c) Fabrice de Stefanis / https://github.com/fab2s/Math
@@ -15,6 +17,8 @@ use Stringable;
 
 /**
  * Class Math
+ *
+ * @phpstan-consistent-constructor
  */
 class Math extends MathOpsAbstract implements JsonSerializable, Stringable
 {
@@ -30,7 +34,7 @@ class Math extends MathOpsAbstract implements JsonSerializable, Stringable
 
     public function __toString(): string
     {
-        return static::normalizeNumber($this->number);
+        return static::normalizeReal($this->number);
     }
 
     public static function number(string|int|float|Math $number): static
@@ -104,16 +108,18 @@ class Math extends MathOpsAbstract implements JsonSerializable, Stringable
         static::validateBase($base = (int) static::validatePositiveInteger($base));
 
         // do not mutate, only support positive integers
+        /** @var numeric-string $number */
         $number = ltrim((string) $this, '-');
         if (static::$gmpSupport) {
             return static::baseConvert($number, 10, $base);
         }
 
         $result   = '';
+        $strBase  = (string) $base;
         $baseChar = static::getBaseChar($base);
-        while (bccomp($number, 0) != 0) { // still data to process
-            $rem    = bcmod($number, $base); // calc the remainder
-            $number = bcdiv(bcsub($number, $rem), $base);
+        while (bccomp($number, '0') != 0) { // still data to process
+            $rem    = (int) bcmod($number, $strBase); // calc the remainder
+            $number = bcdiv(bcsub($number, (string) $rem), $strBase);
             $result = $baseChar[$rem] . $result;
         }
 
@@ -127,10 +133,12 @@ class Math extends MathOpsAbstract implements JsonSerializable, Stringable
         $decimals = max(0, (int) $decimals);
         $dec      = '';
         // do not mutate
-        $number = (new static($this))->round($decimals)->normalize();
+        $number = (new self($this))->round($decimals)->normalize();
         $sign   = $number->isPositive() ? '' : '-';
         if ($number->abs()->hasDecimals()) {
             [$number, $dec] = explode('.', (string) $number);
+        } else {
+            $number = (string) $number;
         }
 
         if ($decimals) {
