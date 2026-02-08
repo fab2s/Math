@@ -159,12 +159,16 @@ Uses GMP when available for faster conversions:
 // From base X to base 10
 Math::fromBase('LZ', 62);      // '1337'
 Math::fromBase('101010', 2);   // '42'
-Math::fromBase('FF', 16);      // '255'
+Math::fromBase('ff', 16);      // '255' (case-insensitive for bases <= 36)
 
 // From base 10 to base X
 Math::number('1337')->toBase(62);  // 'LZ'
 Math::number('42')->toBase(2);     // '101010'
-Math::number('255')->toBase(16);   // 'FF'
+Math::number('255')->toBase(16);   // 'ff'
+
+// Negative numbers preserve their sign
+Math::number('-42')->toBase(16);     // '-2a'
+Math::fromBase('-LZ', 62);          // '-1337'
 ```
 
 ### Formatting
@@ -239,6 +243,51 @@ $order->total->mul('1.2')->format(2); // '119.99'
 
 $order->discount = null;  // OK (nullable)
 $order->total = null;     // Throws NotNullableException
+```
+
+### Mutable Cast
+
+Use `MathMutableCast` to get `MathMutable` instances instead of immutable `Math`:
+
+```php
+use fab2s\Math\Laravel\MathCast;
+use fab2s\Math\Laravel\MathMutableCast;
+
+class Order extends Model
+{
+    protected $casts = [
+        'total'    => MathMutableCast::class,
+        'discount' => MathMutableCast::class . ':nullable',
+        'tax'      => MathCast::class,              // immutable (default)
+    ];
+}
+
+$order = new Order;
+$order->total = '99.99';
+$order->total->add('10'); // modifies in place
+```
+
+Using separate cast classes enables proper static type resolution — Larastan/PHPStan will resolve `MathCast` properties to `Math` and `MathMutableCast` properties to `MathMutable`.
+
+### Upgrading from v2
+
+In v2, `Math` was mutable, so `MathCast` attributes behaved as mutable values. In v3, `Math` is immutable by default — existing code that mutates cast attributes in place will silently lose changes:
+
+```php
+// v2: works — Math was mutable
+// v3: $order->total is unchanged — Math is now immutable
+$order->total->add('10');
+```
+
+To restore the previous behavior, switch to `MathMutableCast`:
+
+```php
+use fab2s\Math\Laravel\MathMutableCast;
+
+protected $casts = [
+    'total'    => MathMutableCast::class,
+    'discount' => MathMutableCast::class . ':nullable',
+];
 ```
 
 ## API Reference
@@ -386,6 +435,23 @@ composer bench-md -- --group=integer        # Filter by group
 ## Contributing
 
 Contributions are welcome. Please open issues and submit pull requests.
+
+```shell
+# fix code style
+composer fix
+
+# run tests
+composer test
+
+# run tests with coverage
+composer cov
+
+# static analysis (src, level 9)
+composer stan
+
+# static analysis (tests, level 5)
+composer stan-tests
+```
 
 ## License
 

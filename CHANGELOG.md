@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- `MathMutableCast` — Laravel Eloquent cast that returns `MathMutable` instances. Use `MathMutableCast::class` (with optional `:nullable`) instead of `MathCast::class` for mutable cast attributes. Separate cast classes enable proper static type resolution. **Upgrading from v2:** since `Math` is now immutable, existing Laravel models that rely on in-place mutation of cast attributes should switch from `MathCast::class` to `MathMutableCast::class` to restore the previous behavior.
 - `MathMutable` — mutable variant of `Math` where operations modify the instance in place. Extends `Math` and is accepted anywhere `Math` is type-hinted.
 - `negate()` — flip sign, zero stays zero
 - `clamp($min, $max)` — clip value between bounds
@@ -34,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- `toBase()` / `fromBase()` now preserve the sign of negative numbers instead of silently stripping it — `Math::number('-42')->toBase(16)` returns `'-2a'` and `Math::fromBase('-2a', 16)` returns `'-42'`
+- `fromBase()` now normalizes input case for bases <= 36 — `Math::fromBase('FF', 16)` works consistently with and without GMP
 - `format()` now works correctly with immutable default (captures `abs()` return value)
 - `bcDec2Base()` properly initializes result as `'0'`
 

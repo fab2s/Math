@@ -1073,6 +1073,31 @@ class MathTest extends TestCase
                 'number' => '9856565',
                 'base'   => 61,
             ],
+            // negative base conversion
+            [
+                'number' => '-42',
+                'base'   => 16,
+            ],
+            [
+                'number' => '-42',
+                'base'   => 2,
+            ],
+            [
+                'number' => '-1337',
+                'base'   => 62,
+            ],
+            [
+                'number' => '-255',
+                'base'   => 36,
+            ],
+            [
+                'number' => '-255173029255255255',
+                'base'   => 16,
+            ],
+            [
+                'number' => '-25517993029255255255',
+                'base'   => 37,
+            ],
         ];
     }
 
@@ -1110,6 +1135,27 @@ class MathTest extends TestCase
             (string) Math::fromBase(Math::number($number)->toBase($base), $base),
         );
 
+        Math::gmpSupport(null);
+    }
+
+    public function test_from_base_case_insensitive()
+    {
+        // bases <= 36: case should not matter
+        $this->assertSame('255', (string) Math::fromBase('FF', 16));
+        $this->assertSame('255', (string) Math::fromBase('ff', 16));
+        $this->assertSame('1337', (string) Math::fromBase('115', 36));
+        $this->assertSame('-255', (string) Math::fromBase('-FF', 16));
+        $this->assertSame('-255', (string) Math::fromBase('-ff', 16));
+
+        if (! Math::gmpSupport()) {
+            return;
+        }
+
+        // verify bcmath path produces the same results
+        Math::gmpSupport(true);
+        $this->assertSame('255', (string) Math::fromBase('FF', 16));
+        $this->assertSame('255', (string) Math::fromBase('ff', 16));
+        $this->assertSame('-255', (string) Math::fromBase('-FF', 16));
         Math::gmpSupport(null);
     }
 
