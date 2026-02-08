@@ -38,8 +38,8 @@ jobs:
       - name: Remove composer.lock
         run: rm -f composer.lock
 
-      - name: Remove Pint
-        run: composer remove "laravel/pint" --dev --no-update
+      - name: Remove Qa / bench libs
+        run: composer remove "laravel/pint" "brick/math" --dev --no-update
 
       - name: Install Orchestra ${{ matrix.orchestra-versions }}
         run: composer require "orchestra/testbench:^${{ matrix.orchestra-versions }}" --dev --no-update
