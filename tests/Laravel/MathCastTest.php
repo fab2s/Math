@@ -11,14 +11,16 @@ namespace fab2s\Math\Tests\Laravel;
 
 use fab2s\Math\Laravel\Exception\NotNullableException;
 use fab2s\Math\Laravel\MathCast;
+use fab2s\Math\Laravel\MathMutableCast;
 use fab2s\Math\Math;
+use fab2s\Math\MathMutable;
 use fab2s\Math\Tests\Laravel\Artifacts\CastModel;
 use Orchestra\Testbench\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 class MathCastTest extends TestCase
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         // Turn on error reporting
         error_reporting(E_ALL);
@@ -33,18 +35,21 @@ class MathCastTest extends TestCase
         Math|string|int|float|null $value,
         Math|string|null $expected,
         array $options = [],
+        string $castClass = MathCast::class,
     ): void {
-        $cast = new MathCast(...$options);
+        $cast = new $castClass(...$options);
 
         switch (true) {
             case is_object($expected):
-                $this->assertTrue($expected->eq($cast->get(new CastModel, 'key', $value, [])));
+                $result = $cast->get(new CastModel, 'key', $value, []);
+                $this->assertTrue($expected->eq($result));
+                $this->assertSame(get_class($expected), get_class($result));
                 break;
             case is_string($expected):
                 $this->expectException(NotNullableException::class);
                 $cast->get(new CastModel, 'key', $value, []);
                 break;
-            case $expected === null:
+            default:
                 $this->assertNull($cast->get(new CastModel, 'key', $value, []));
                 break;
         }
@@ -58,8 +63,9 @@ class MathCastTest extends TestCase
         Math|string|int|float|null $value,
         Math|string|null $expected,
         array $options = [],
+        string $castClass = MathCast::class,
     ): void {
-        $cast = new MathCast(...$options);
+        $cast = new $castClass(...$options);
 
         switch (true) {
             case is_object($expected):
@@ -69,7 +75,7 @@ class MathCastTest extends TestCase
                 $this->expectException(NotNullableException::class);
                 $cast->set(new CastModel, 'key', $value, []);
                 break;
-            case $expected === null:
+            default:
                 $this->assertSame(null, $cast->set(new CastModel, 'key', $value, []));
                 break;
         }
@@ -110,6 +116,49 @@ class MathCastTest extends TestCase
                 'value'    => 42,
                 'expected' => Math::number(42),
                 'options'  => ['nullable'],
+            ],
+            // MathMutableCast cases
+            [
+                'value'     => null,
+                'expected'  => null,
+                'options'   => ['nullable'],
+                'castClass' => MathMutableCast::class,
+            ],
+            [
+                'value'     => MathMutable::number(42.42),
+                'expected'  => MathMutable::number(42.42),
+                'options'   => ['nullable'],
+                'castClass' => MathMutableCast::class,
+            ],
+            [
+                'value'     => MathMutable::number(42.42),
+                'expected'  => MathMutable::number(42.42),
+                'options'   => [],
+                'castClass' => MathMutableCast::class,
+            ],
+            [
+                'value'     => null,
+                'expected'  => NotNullableException::class,
+                'options'   => [],
+                'castClass' => MathMutableCast::class,
+            ],
+            [
+                'value'     => '42.4200000',
+                'expected'  => MathMutable::number(42.42),
+                'options'   => ['nullable'],
+                'castClass' => MathMutableCast::class,
+            ],
+            [
+                'value'     => 42.42,
+                'expected'  => MathMutable::number(42.42),
+                'options'   => ['nullable'],
+                'castClass' => MathMutableCast::class,
+            ],
+            [
+                'value'     => 42,
+                'expected'  => MathMutable::number(42),
+                'options'   => ['nullable'],
+                'castClass' => MathMutableCast::class,
             ],
         ];
     }

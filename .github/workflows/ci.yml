@@ -6,15 +6,17 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: [ '8.2', '8.1' ]
-        orchestra-versions: [ '8.0', '9.0' ]
+        php-versions: [ '8.4', '8.3', '8.2', '8.1' ]
+        orchestra-versions: [ '8.0', '9.0', '10.0' ]
         exclude:
           - php-versions: 8.1
             orchestra-versions: 9.0
+          - php-versions: 8.1
+            orchestra-versions: 10.0
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -24,10 +26,10 @@ jobs:
 
       - name: Get composer cache directory
         id: composer-cache
-        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache composer dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
@@ -36,8 +38,8 @@ jobs:
       - name: Remove composer.lock
         run: rm -f composer.lock
 
-      - name: Remove Pint
-        run: composer remove "laravel/pint" --dev --no-update
+      - name: Remove Qa / bench libs
+        run: composer remove "laravel/pint" "brick/math" --dev --no-update
 
       - name: Install Orchestra ${{ matrix.orchestra-versions }}
         run: composer require "orchestra/testbench:^${{ matrix.orchestra-versions }}" --dev --no-update
@@ -46,4 +48,4 @@ jobs:
         run: composer install --no-progress --prefer-dist --optimize-autoloader
 
       - name: Test with phpunit
-        run: vendor/bin/phpunit
+        run: composer test

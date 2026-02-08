@@ -81,6 +81,10 @@ class MathTest extends TestCase
             ['-0', '0.00000000', 8],
             ['+0', '0.00000000', 8],
             ['0', '0'],
+            // negative values that round to zero must not produce -0
+            ['-0.001', '0.00', 2],
+            ['-0.004', '0.00', 2],
+            ['-0.000000001', '0.00000000', 8],
         ];
     }
 
@@ -521,6 +525,19 @@ class MathTest extends TestCase
             [
                 'number'   => Math::number(' 000100.0001 '),
                 'expected' => '100.0001',
+            ],
+            // negative zero variants with decimal padding
+            [
+                'number'   => '-0.00',
+                'expected' => '0',
+            ],
+            [
+                'number'   => '-0.000000000',
+                'expected' => '0',
+            ],
+            [
+                'number'   => '-00.00',
+                'expected' => '0',
             ],
         ];
     }
@@ -998,69 +1015,94 @@ class MathTest extends TestCase
         return [
             [
                 'number' => '0',
-                'base'   => '62',
+                'base'   => 62,
             ],
             [
                 'number' => '0',
-                'base'   => '36',
+                'base'   => 36,
             ],
             [
                 'number' => '10',
-                'base'   => '62',
+                'base'   => 62,
             ],
             [
                 'number' => '10',
-                'base'   => '36',
+                'base'   => 36,
             ],
             [
                 'number' => '62',
-                'base'   => '62',
+                'base'   => 62,
             ],
             [
                 'number' => '36',
-                'base'   => '36',
+                'base'   => 36,
             ],
             [
                 'number' => '000255173029255255255',
-                'base'   => '16',
+                'base'   => 16,
             ],
             [
                 'number' => '00025517302925525525',
-                'base'   => '28',
+                'base'   => 28,
             ],
             [
                 'number' => '000255173029255255255',
-                'base'   => '8',
+                'base'   => 8,
             ],
             [
                 'number' => '000255173029255255255',
-                'base'   => '36',
+                'base'   => 36,
             ],
             [
                 'number' => '255173029255255255',
-                'base'   => '2',
+                'base'   => 2,
             ],
             [
                 'number' => '25517993029255255255',
-                'base'   => '37',
+                'base'   => 37,
             ],
             [
                 'number' => '25517993029255255255',
-                'base'   => '35',
+                'base'   => 35,
             ],
             [
                 'number' => '0',
-                'base'   => '48',
+                'base'   => 48,
             ],
             [
                 'number' => '9856565',
-                'base'   => '61',
+                'base'   => 61,
+            ],
+            // negative base conversion
+            [
+                'number' => '-42',
+                'base'   => 16,
+            ],
+            [
+                'number' => '-42',
+                'base'   => 2,
+            ],
+            [
+                'number' => '-1337',
+                'base'   => 62,
+            ],
+            [
+                'number' => '-255',
+                'base'   => 36,
+            ],
+            [
+                'number' => '-255173029255255255',
+                'base'   => 16,
+            ],
+            [
+                'number' => '-25517993029255255255',
+                'base'   => 37,
             ],
         ];
     }
 
     #[DataProvider('baseConvertData')]
-    public function test_base_convert(string|int|Math $number, string $base)
+    public function test_base_convert(string|int|Math $number, int $base)
     {
         $this->assertSame(
             (string) Math::number($number),
@@ -1096,9 +1138,285 @@ class MathTest extends TestCase
         Math::gmpSupport(null);
     }
 
+    public function test_from_base_case_insensitive()
+    {
+        // bases <= 36: case should not matter
+        $this->assertSame('255', (string) Math::fromBase('FF', 16));
+        $this->assertSame('255', (string) Math::fromBase('ff', 16));
+        $this->assertSame('1337', (string) Math::fromBase('115', 36));
+        $this->assertSame('-255', (string) Math::fromBase('-FF', 16));
+        $this->assertSame('-255', (string) Math::fromBase('-ff', 16));
+
+        if (! Math::gmpSupport()) {
+            return;
+        }
+
+        // verify bcmath path produces the same results
+        Math::gmpSupport(true);
+        $this->assertSame('255', (string) Math::fromBase('FF', 16));
+        $this->assertSame('255', (string) Math::fromBase('ff', 16));
+        $this->assertSame('-255', (string) Math::fromBase('-FF', 16));
+        Math::gmpSupport(null);
+    }
+
+    #[DataProvider('modData')]
+    public function test_mod_gmp_toggle(string|int|Math $number, string $mod, string $expected)
+    {
+        if (! Math::gmpSupport()) {
+            $this->markTestSkipped('GMP not available');
+        }
+
+        $gmpResult = (string) Math::number($number)->mod($mod);
+
+        Math::gmpSupport(true);
+        $bcResult = (string) Math::number($number)->mod($mod);
+        Math::gmpSupport(null);
+
+        $this->assertSame($gmpResult, $bcResult);
+    }
+
+    #[DataProvider('powModData')]
+    public function test_pow_mod_gmp_toggle(string|int|Math $number, string $pow, string $mod)
+    {
+        if (! Math::gmpSupport()) {
+            $this->markTestSkipped('GMP not available');
+        }
+
+        $gmpResult = (string) Math::number($number)->powMod($pow, $mod);
+
+        Math::gmpSupport(true);
+        $bcResult = (string) Math::number($number)->powMod($pow, $mod);
+        Math::gmpSupport(null);
+
+        $this->assertSame($gmpResult, $bcResult);
+    }
+
+    public static function powGmpData(): array
+    {
+        return [
+            [
+                'number'   => '2',
+                'exponent' => '10',
+                'expected' => '1024',
+            ],
+            [
+                'number'   => '7',
+                'exponent' => '5',
+                'expected' => '16807',
+            ],
+            [
+                'number'   => '123456789',
+                'exponent' => '3',
+                'expected' => '1881676371789154860897069',
+            ],
+            [
+                'number'   => '-3',
+                'exponent' => '3',
+                'expected' => '-27',
+            ],
+            [
+                'number'   => '1',
+                'exponent' => '100',
+                'expected' => '1',
+            ],
+            [
+                'number'   => '0',
+                'exponent' => '5',
+                'expected' => '0',
+            ],
+        ];
+    }
+
+    #[DataProvider('powGmpData')]
+    public function test_pow_gmp_toggle(string|int|Math $number, string $exponent, string $expected)
+    {
+        if (! Math::gmpSupport()) {
+            $this->markTestSkipped('GMP not available');
+        }
+
+        $gmpResult = (string) Math::number($number)->pow($exponent);
+        $this->assertSame($expected, $gmpResult);
+
+        Math::gmpSupport(true);
+        $bcResult = (string) Math::number($number)->pow($exponent);
+        Math::gmpSupport(null);
+
+        $this->assertSame($gmpResult, $bcResult);
+    }
+
+    public function test_pow_decimal_uses_bcmath()
+    {
+        // Decimal base should use bcmath path even with GMP available
+        $result = (string) Math::number('2.5')->pow('3');
+        $this->assertSame('15.625', $result);
+    }
+
     public function test_to_string()
     {
         $this->assertSame('33.33', (string) Math::number('33.33'));
         $this->assertSame('33.33', Math::number('33.33')->jsonSerialize());
+    }
+
+    public function test_is_zero()
+    {
+        $this->assertTrue(Math::number('0')->isZero());
+        $this->assertTrue(Math::number('-0')->isZero());
+        $this->assertTrue(Math::number('+0')->isZero());
+        $this->assertTrue(Math::number('0.000000000')->isZero());
+        $this->assertFalse(Math::number('1')->isZero());
+        $this->assertFalse(Math::number('-1')->isZero());
+        $this->assertFalse(Math::number('0.000000001')->isZero());
+    }
+
+    public function test_is_negative()
+    {
+        $this->assertTrue(Math::number('-1')->isNegative());
+        $this->assertTrue(Math::number('-0.001')->isNegative());
+        $this->assertFalse(Math::number('0')->isNegative());
+        $this->assertFalse(Math::number('-0')->isNegative());
+        $this->assertFalse(Math::number('+0')->isNegative());
+        $this->assertFalse(Math::number('0.000000000')->isNegative());
+        $this->assertFalse(Math::number('1')->isNegative());
+        $this->assertFalse(Math::number('+42')->isNegative());
+    }
+
+    public function test_is_even()
+    {
+        $this->assertTrue(Math::number('0')->isEven());
+        $this->assertTrue(Math::number('2')->isEven());
+        $this->assertTrue(Math::number('42')->isEven());
+        $this->assertTrue(Math::number('-8')->isEven());
+        $this->assertFalse(Math::number('1')->isEven());
+        $this->assertFalse(Math::number('3')->isEven());
+        $this->assertFalse(Math::number('-7')->isEven());
+        // non-integers are neither even nor odd
+        $this->assertFalse(Math::number('42.5')->isEven());
+        $this->assertFalse(Math::number('2.0001')->isEven());
+        $this->assertFalse(Math::number('-3.14')->isEven());
+    }
+
+    public function test_is_odd()
+    {
+        $this->assertTrue(Math::number('1')->isOdd());
+        $this->assertTrue(Math::number('3')->isOdd());
+        $this->assertTrue(Math::number('-7')->isOdd());
+        $this->assertFalse(Math::number('0')->isOdd());
+        $this->assertFalse(Math::number('2')->isOdd());
+        $this->assertFalse(Math::number('42')->isOdd());
+        // non-integers are neither even nor odd
+        $this->assertFalse(Math::number('42.5')->isOdd());
+        $this->assertFalse(Math::number('1.001')->isOdd());
+        $this->assertFalse(Math::number('-3.14')->isOdd());
+    }
+
+    public function test_is_even_odd_after_operations()
+    {
+        // after operations, bcmath pads with zeros — should still work
+        $this->assertTrue(Math::number('1')->add('1')->isEven());
+        $this->assertTrue(Math::number('2')->add('1')->isOdd());
+        $this->assertFalse(Math::number('1')->div('3')->isEven());
+        $this->assertFalse(Math::number('1')->div('3')->isOdd());
+    }
+
+    public function test_get_scale()
+    {
+        $this->assertSame(0, Math::number('42')->getScale());
+        $this->assertSame(2, Math::number('42.99')->getScale());
+        $this->assertSame(9, Math::number('1.123456789')->getScale());
+        $this->assertSame(3, Math::number('-0.001')->getScale());
+        // after operations, bcmath padding should be stripped
+        $this->assertSame(0, Math::number('1')->add('1')->getScale());
+        $this->assertSame(0, Math::number('1.5')->add('0.5')->getScale());
+        $this->assertSame(1, Math::number('1.5')->add('0.3')->getScale());
+    }
+
+    public function test_get_integral_part()
+    {
+        $this->assertSame('42', Math::number('42')->getIntegralPart());
+        $this->assertSame('42', Math::number('42.99')->getIntegralPart());
+        $this->assertSame('0', Math::number('-0.001')->getIntegralPart());
+        $this->assertSame('0', Math::number('0')->getIntegralPart());
+        $this->assertSame('0', Math::number('-0')->getIntegralPart());
+        // after operations
+        $this->assertSame('2', Math::number('1')->add('1')->getIntegralPart());
+    }
+
+    public function test_get_fractional_part()
+    {
+        $this->assertSame('', Math::number('42')->getFractionalPart());
+        $this->assertSame('99', Math::number('42.99')->getFractionalPart());
+        $this->assertSame('001', Math::number('-0.001')->getFractionalPart());
+        $this->assertSame('123456789', Math::number('1.123456789')->getFractionalPart());
+        // after operations, padding should be stripped
+        $this->assertSame('', Math::number('1')->add('1')->getFractionalPart());
+    }
+
+    public function test_negate()
+    {
+        $this->assertSame('-42', (string) Math::number('42')->negate());
+        $this->assertSame('42', (string) Math::number('-42')->negate());
+        $this->assertSame('0', (string) Math::number('0')->negate());
+        $this->assertSame('0', (string) Math::number('-0')->negate());
+        $this->assertSame('0', (string) Math::number('+0')->negate());
+        $this->assertSame('0', (string) Math::number('0.000000000')->negate());
+        $this->assertSame('-0.5', (string) Math::number('0.5')->negate());
+        $this->assertSame('0.5', (string) Math::number('-0.5')->negate());
+        // beyond precision — should still negate
+        $this->assertSame('-0.0000000001', (string) Math::number('0.0000000001')->negate());
+    }
+
+    public function test_negate_is_immutable()
+    {
+        $a = Math::number('42');
+        $b = $a->negate();
+
+        $this->assertSame('42', (string) $a);
+        $this->assertSame('-42', (string) $b);
+        $this->assertNotSame($a, $b);
+    }
+
+    public function test_clamp()
+    {
+        $this->assertSame('5', (string) Math::number('5')->clamp('0', '10'));
+        $this->assertSame('0', (string) Math::number('-5')->clamp('0', '10'));
+        $this->assertSame('10', (string) Math::number('15')->clamp('0', '10'));
+        $this->assertSame('0', (string) Math::number('0')->clamp('0', '10'));
+        $this->assertSame('10', (string) Math::number('10')->clamp('0', '10'));
+        $this->assertSame('-5', (string) Math::number('-5')->clamp('-10', '-1'));
+    }
+
+    public function test_clamp_is_immutable()
+    {
+        $a = Math::number('15');
+        $b = $a->clamp('0', '10');
+
+        $this->assertSame('15', (string) $a);
+        $this->assertSame('10', (string) $b);
+        $this->assertNotSame($a, $b);
+    }
+
+    public function test_quotient_and_remainder()
+    {
+        [$q, $r] = Math::number('17')->quotientAndRemainder('5');
+        $this->assertSame('3', (string) $q);
+        $this->assertSame('2', (string) $r);
+
+        [$q, $r] = Math::number('100')->quotientAndRemainder('10');
+        $this->assertSame('10', (string) $q);
+        $this->assertSame('0', (string) $r);
+
+        [$q, $r] = Math::number('-17')->quotientAndRemainder('5');
+        $this->assertSame('-3', (string) $q);
+        $this->assertSame('-2', (string) $r);
+    }
+
+    public function test_quotient_and_remainder_is_immutable()
+    {
+        $a       = Math::number('17');
+        [$q, $r] = $a->quotientAndRemainder('5');
+
+        $this->assertSame('17', (string) $a);
+        $this->assertNotSame($a, $q);
+        $this->assertNotSame($a, $r);
     }
 }
