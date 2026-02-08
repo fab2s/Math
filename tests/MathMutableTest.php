@@ -204,8 +204,6 @@ class MathMutableTest extends TestCase
         $this->assertInstanceOf(Math::class, $a->min('5'));
     }
 
-    // ─── MathMutable is mutable ───────────────────────────────────
-
     public function test_mutable_instanceof_math()
     {
         $this->assertInstanceOf(Math::class, MathMutable::number('42'));
@@ -274,8 +272,6 @@ class MathMutableTest extends TestCase
 
     public function test_mutable_operations_return_mutable()
     {
-        $a = MathMutable::number('10');
-
         $this->assertInstanceOf(MathMutable::class, MathMutable::number('10')->add('1'));
         $this->assertInstanceOf(MathMutable::class, MathMutable::number('10')->sub('1'));
         $this->assertInstanceOf(MathMutable::class, MathMutable::number('10')->mul('2'));
@@ -308,8 +304,6 @@ class MathMutableTest extends TestCase
         $this->assertSame('15', (string) $result2);
         $this->assertInstanceOf(MathMutable::class, $result2);
     }
-
-    // ─── MathMutable edge cases for new operations ───────────────
 
     public function test_mutable_negate_is_mutable()
     {
