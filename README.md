@@ -18,8 +18,8 @@ Floating-point arithmetic has well-known precision limitations:
 
 ```php
 var_dump((0.1 + 0.7) == 0.8);   // false
-echo (1.4 - 1) * 100;           // 40.000000000000006
-echo 0.7 + 0.1 - 0.8;           // -1.1102230246252E-16
+var_dump((1.4 - 1) * 100);      // 39.99999999999999
+var_dump(0.7 + 0.1 - 0.8);      // -1.1102230246251565E-16
 ```
 
 > `bcmath` supports numbers of any size and precision up to 2,147,483,647 decimals, represented as strings.
