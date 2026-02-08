@@ -34,7 +34,7 @@ composer require fab2s/math
 
 - PHP 8.1+
 - ext-bcmath (required)
-- ext-gmp (optional, enables ~20x faster base conversions)
+- ext-gmp (optional, faster base conversions, mod, pow and powMod)
 
 ## Features
 
@@ -293,6 +293,48 @@ $order->total = null;     // Throws NotNullableException
 | `getPrecision()` | Get instance precision |
 | `Math::setGlobalPrecision($p)` | Set default for new instances |
 | `Math::getGlobalPrecision()` | Get global precision |
+
+## Benchmarks
+
+Compared against [brick/math](https://github.com/brick/math) (PHP 8.4, opcache off, GMP enabled). The **bold** value is the faster one in each row, and _Factor_ shows how many times faster it is.
+
+| Operation | fab2s/math | brick/math | Factor |
+|---|---:|---:|---:|
+| instantiate int | **0.244μs (±6.9%)** | 0.274μs (±2.0%) | 1.12x |
+| instantiate string | **0.224μs (±8.8%)** | 0.566μs (±3.4%) | 2.52x |
+| add | **0.560μs (±16.8%)** | 2.083μs (±3.3%) | 3.72x |
+| add variadic | **1.244μs (±2.7%)** | 6.172μs (±2.7%) | 4.96x |
+| sub | **0.570μs (±4.6%)** | 2.134μs (±4.1%) | 3.75x |
+| mul | **0.659μs (±6.5%)** | 2.073μs (±6.2%) | 3.15x |
+| div | **0.646μs (±12.1%)** | 4.374μs (±2.3%) | 6.78x |
+| pow | **0.896μs (±4.9%)** | 1.248μs (±12.7%) | 1.39x |
+| mod | **0.800μs (±8.0%)** | 2.554μs (±5.1%) | 3.19x |
+| sqrt | **2.414μs (±7.2%)** | 4.893μs (±38.1%) | 2.03x |
+| abs | **0.594μs (±18.9%)** | 1.000μs (±8.4%) | 1.68x |
+| round | **0.556μs (±21.3%)** | 3.474μs (±5.2%) | 6.25x |
+| ceil | **0.505μs (±8.9%)** | 3.203μs (±37.2%) | 6.34x |
+| floor | **0.444μs (±3.3%)** | 2.448μs (±3.1%) | 5.52x |
+| comparisons | **1.471μs (±61.7%)** | 6.027μs (±4.7%) | 4.10x |
+| to string | **0.585μs (±19.4%)** | 0.842μs (±12.0%) | 1.44x |
+| chained workflow | **1.618μs (±3.3%)** | 8.461μs (±10.7%) | 5.23x |
+| large number ops | **1.679μs (±3.3%)** | 8.392μs (±3.4%) | 5.00x |
+| accumulate 100 additions | **37.691μs (±0.9%)** | 150.010μs (±1.7%) | 3.98x |
+| base convert to 62 | **1.079μs (±1.6%)** | 6.328μs (±16.6%) | 5.87x |
+| base convert to 16 | 0.966μs (±8.2%) | **0.863μs (±13.0%)** | 0.89x |
+| integer mul | **0.691μs (±33.0%)** | 1.859μs (±16.5%) | 2.69x |
+| integer powmod | **1.124μs (±8.3%)** | 2.551μs (±3.6%) | 2.27x |
+| create 1000 instances | **281.288μs (±3.2%)** | 669.150μs (±0.7%) | 2.38x |
+| immutable chain | **2.086μs (±5.9%)** | 13.237μs (±2.8%) | 6.34x |
+
+fab2s/math wins every operation except base-16 conversion, where brick/math delegates to GMP's native hex output. The speed advantage comes from keeping bcmath's C-level string arithmetic as the hot path for decimal operations, while brick/math pays for an extra object-wrapping layer on top of GMP. Integer-only operations (`mod`, `pow`, `powMod`, base conversion) use GMP directly when the extension is available, combining the best of both backends. Realistic workflows like chained calculations or 100-iteration accumulations show a consistent 4-6x advantage, and the immutable variant stays over 6x faster thanks to a single lightweight `clone` per operation versus brick/math's heavier object allocation.
+
+Run benchmarks yourself:
+
+```bash
+composer bench                              # ASCII table
+composer bench-md                           # Markdown table
+composer bench-md -- --group=integer        # Filter by group
+```
 
 ## Compatibility
 

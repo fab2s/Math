@@ -66,24 +66,43 @@ abstract class MathOpsAbstract extends MathBaseAbstract
 
     public function pow(string|int $exponent): static
     {
-        $result         = $this->mutate();
-        $result->number = bcpow($result->number, static::validatePositiveInteger($exponent), $result->precision);
+        $result   = $this->mutate();
+        $exponent = static::validatePositiveInteger($exponent);
+
+        if (static::$gmpSupport && ! $result->hasDecimals()) {
+            $result->number = gmp_strval(gmp_pow(gmp_init($result->number), (int) $exponent)); // @phpstan-ignore assign.propertyType
+        } else {
+            $result->number = bcpow($result->number, $exponent, $result->precision);
+        }
 
         return $result;
     }
 
     public function mod(string|int $modulus): static
     {
-        $result         = $this->mutate();
-        $result->number = bcmod($result->number, static::validatePositiveInteger($modulus));
+        $result  = $this->mutate();
+        $modulus = static::validatePositiveInteger($modulus);
+
+        if (static::$gmpSupport) {
+            $result->number = gmp_strval(gmp_mod(gmp_init($result->number), gmp_init($modulus))); // @phpstan-ignore assign.propertyType
+        } else {
+            $result->number = bcmod($result->number, $modulus);
+        }
 
         return $result;
     }
 
     public function powMod(string|int $exponent, string|int $modulus): static
     {
-        $result         = $this->mutate();
-        $result->number = bcpowmod($result->number, static::validatePositiveInteger($exponent), static::validatePositiveInteger($modulus));
+        $result   = $this->mutate();
+        $exponent = static::validatePositiveInteger($exponent);
+        $modulus  = static::validatePositiveInteger($modulus);
+
+        if (static::$gmpSupport) {
+            $result->number = gmp_strval(gmp_powm(gmp_init($result->number), gmp_init($exponent), gmp_init($modulus))); // @phpstan-ignore assign.propertyType
+        } else {
+            $result->number = bcpowmod($result->number, $exponent, $modulus);
+        }
 
         return $result;
     }

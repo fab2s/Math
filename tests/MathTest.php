@@ -1096,6 +1096,98 @@ class MathTest extends TestCase
         Math::gmpSupport(null);
     }
 
+    #[DataProvider('modData')]
+    public function test_mod_gmp_toggle(string|int|Math $number, string $mod, string $expected)
+    {
+        if (! Math::gmpSupport()) {
+            $this->markTestSkipped('GMP not available');
+        }
+
+        $gmpResult = (string) Math::number($number)->mod($mod);
+
+        Math::gmpSupport(true);
+        $bcResult = (string) Math::number($number)->mod($mod);
+        Math::gmpSupport(null);
+
+        $this->assertSame($gmpResult, $bcResult);
+    }
+
+    #[DataProvider('powModData')]
+    public function test_pow_mod_gmp_toggle(string|int|Math $number, string $pow, string $mod)
+    {
+        if (! Math::gmpSupport()) {
+            $this->markTestSkipped('GMP not available');
+        }
+
+        $gmpResult = (string) Math::number($number)->powMod($pow, $mod);
+
+        Math::gmpSupport(true);
+        $bcResult = (string) Math::number($number)->powMod($pow, $mod);
+        Math::gmpSupport(null);
+
+        $this->assertSame($gmpResult, $bcResult);
+    }
+
+    public static function powGmpData(): array
+    {
+        return [
+            [
+                'number'   => '2',
+                'exponent' => '10',
+                'expected' => '1024',
+            ],
+            [
+                'number'   => '7',
+                'exponent' => '5',
+                'expected' => '16807',
+            ],
+            [
+                'number'   => '123456789',
+                'exponent' => '3',
+                'expected' => '1881676371789154860897069',
+            ],
+            [
+                'number'   => '-3',
+                'exponent' => '3',
+                'expected' => '-27',
+            ],
+            [
+                'number'   => '1',
+                'exponent' => '100',
+                'expected' => '1',
+            ],
+            [
+                'number'   => '0',
+                'exponent' => '5',
+                'expected' => '0',
+            ],
+        ];
+    }
+
+    #[DataProvider('powGmpData')]
+    public function test_pow_gmp_toggle(string|int|Math $number, string $exponent, string $expected)
+    {
+        if (! Math::gmpSupport()) {
+            $this->markTestSkipped('GMP not available');
+        }
+
+        $gmpResult = (string) Math::number($number)->pow($exponent);
+        $this->assertSame($expected, $gmpResult);
+
+        Math::gmpSupport(true);
+        $bcResult = (string) Math::number($number)->pow($exponent);
+        Math::gmpSupport(null);
+
+        $this->assertSame($gmpResult, $bcResult);
+    }
+
+    public function test_pow_decimal_uses_bcmath()
+    {
+        // Decimal base should use bcmath path even with GMP available
+        $result = (string) Math::number('2.5')->pow('3');
+        $this->assertSame('15.625', $result);
+    }
+
     public function test_to_string()
     {
         $this->assertSame('33.33', (string) Math::number('33.33'));

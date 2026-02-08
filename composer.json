@@ -27,7 +27,9 @@
         "phpunit/phpunit": "^10.0|^11.0",
         "laravel/pint": "^1.11",
         "orchestra/testbench": "^8.0|^9.0|^10.0",
-        "phpstan/phpstan": "^2.1"
+        "phpstan/phpstan": "^2.1",
+        "brick/math": "^0.14.7",
+        "phpbench/phpbench": "^1.4"
     },
     "autoload": {
         "psr-4": {
@@ -36,7 +38,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "fab2s\\Math\\Tests\\": "tests"
+            "fab2s\\Math\\Tests\\": "tests",
+            "fab2s\\Math\\Benchmarks\\": "benchmarks"
         }
     },
     "scripts": {
@@ -65,9 +68,17 @@
         "stan-tests": [
             "Composer\\Config::disableProcessTimeout",
             "@php vendor/bin/phpstan analyse -c ./phpstan-tests.neon --ansi --"
+        ],
+        "bench": [
+            "Composer\\Config::disableProcessTimeout",
+            "XDEBUG_MODE=off @php vendor/bin/phpbench run --report=aggregate --"
+        ],
+        "bench-md": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php benchmarks/report.php --"
         ]
     },
     "suggest": {
-        "ext-gmp": "For faster Math::baseConvert up to base62"
+        "ext-gmp": "For faster base conversion, mod, pow and powMod"
     }
 }
