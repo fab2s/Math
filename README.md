@@ -54,34 +54,30 @@ $result = Math::number('100')
 echo $result; // '42'
 ```
 
-> **Important:** `Math` instances are **mutable**. Operations modify the instance in place and return `$this` for chaining. To preserve the original value, use `MathImmutable` or wrap it in a new instance:
->
-> ```php
-> $original = Math::number('100');
-> $modified = $original->add('50'); // $original is now also '150'
->
-> // To keep $original unchanged:
-> $original = Math::number('100');
-> $modified = Math::number($original)->add('50'); // $original stays '100'
-> ```
-
-### Immutable Variant
-
-`MathImmutable` provides the same API but every operation returns a new instance, leaving the original unchanged:
+`Math` is **immutable** — every operation returns a new instance, leaving the original unchanged:
 
 ```php
-use fab2s\Math\MathImmutable;
-
-$a = MathImmutable::number('100');
+$a = Math::number('100');
 $b = $a->add('50');   // $a is still '100', $b is '150'
 $c = $b->mul('2');    // $b is still '150', $c is '300'
-
-// Works everywhere Math is accepted
-function calculateTax(Math $price): Math { /* ... */ }
-calculateTax($a); // MathImmutable extends Math
 ```
 
-`MathImmutable` extends `Math`, so it inherits all factory methods (`number()`, `make()`, `fromBase()`) and is accepted anywhere `Math` is type-hinted. The overhead is a single `clone` per operation (two properties: a string and an int).
+The overhead is a single `clone` per operation (two properties: a string and an int).
+
+### Mutable Variant
+
+For performance-sensitive hot loops, `MathMutable` modifies the instance in place:
+
+```php
+use fab2s\Math\MathMutable;
+
+$sum = MathMutable::number('0');
+for ($i = 0; $i < 1000; $i++) {
+    $sum->add($i . '.99'); // modifies $sum in place, no clone
+}
+```
+
+`MathMutable` extends `Math`, so it is accepted anywhere `Math` is type-hinted.
 
 ### Strict Validation
 
@@ -116,6 +112,10 @@ $n->pow('2');        // Power
 $n->mod('7');        // Modulo
 $n->powMod($e, $m);  // Modular exponentiation
 $n->abs();           // Absolute value
+$n->negate();        // Flip sign
+
+// Division
+$n->quotientAndRemainder('7');       // [$quotient, $remainder]
 
 // Rounding
 $n->round(2);        // Round to 2 decimals
@@ -123,11 +123,12 @@ $n->floor();         // Round down
 $n->ceil();          // Round up
 
 // Limits
-$n->min('50', '200'); // 50
-$n->max('50', '200'); // 200
+$n->min('50', '200');     // 50
+$n->max('50', '200');     // 200
+$n->clamp('10', '90');    // Clip between bounds
 ```
 
-### Comparisons
+### Comparisons & Inspection
 
 ```php
 $n = Math::number('42');
@@ -137,6 +138,17 @@ $n->gt('40');    // true  — greater than
 $n->gte('42');   // true  — greater than or equal
 $n->lt('50');    // true  — less than
 $n->lte('42');   // true  — less than or equal
+
+$n->isZero();      // false
+$n->isPositive();  // true
+$n->isNegative();  // false
+$n->isEven();      // true
+$n->isOdd();       // false
+
+$n = Math::number('42.99');
+$n->getScale();          // 2
+$n->getIntegralPart();   // '42'
+$n->getFractionalPart(); // '99'
 ```
 
 ### Base Conversion (2-62)
@@ -203,7 +215,7 @@ Pass Math instances directly to avoid re-validation:
 $tax = Math::number('0.20');
 $price = Math::number('99.99');
 
-$total = Math::number($price)->add($price->mul($tax));
+$total = $price->add($price->mul($tax));
 ```
 
 ## Laravel Integration
@@ -235,12 +247,12 @@ $order->total = null;     // Throws NotNullableException
 
 | Method | Description |
 |--------|-------------|
-| `Math::number($n)` | Create mutable instance |
+| `Math::number($n)` | Create immutable instance |
 | `Math::make($n)` | Alias for `number()` |
 | `Math::fromBase($n, $base)` | Create from base 2-62 |
-| `MathImmutable::number($n)` | Create immutable instance |
-| `MathImmutable::make($n)` | Alias for `number()` |
-| `MathImmutable::fromBase($n, $base)` | Create immutable from base 2-62 |
+| `MathMutable::number($n)` | Create mutable instance |
+| `MathMutable::make($n)` | Alias for `number()` |
+| `MathMutable::fromBase($n, $base)` | Create mutable from base 2-62 |
 
 ### Arithmetic
 
@@ -250,11 +262,14 @@ $order->total = null;     // Throws NotNullableException
 | `sub(...$n)` | Subtraction |
 | `mul(...$n)` | Multiplication |
 | `div(...$n)` | Division |
+| `quotientAndRemainder($n)` | Returns `[$quotient, $remainder]` |
 | `mod($n)` | Modulo |
 | `pow($n)` | Power |
 | `powMod($exp, $mod)` | Modular exponentiation |
 | `sqrt()` | Square root |
 | `abs()` | Absolute value |
+| `negate()` | Flip sign |
+| `clamp($min, $max)` | Clip between bounds |
 
 ### Rounding
 
@@ -264,7 +279,7 @@ $order->total = null;     // Throws NotNullableException
 | `floor()` | Round down |
 | `ceil()` | Round up |
 
-### Comparison
+### Comparison & Inspection
 
 | Method | Description |
 |--------|-------------|
@@ -275,6 +290,11 @@ $order->total = null;     // Throws NotNullableException
 | `lte($n)` | Less than or equal |
 | `min(...$n)` | Minimum value |
 | `max(...$n)` | Maximum value |
+| `isZero()` | Check if zero |
+| `isPositive()` | Check if positive |
+| `isNegative()` | Check if negative |
+| `isEven()` | Check if even integer |
+| `isOdd()` | Check if odd integer |
 
 ### Conversion & Output
 
@@ -283,6 +303,9 @@ $order->total = null;     // Throws NotNullableException
 | `toBase($base)` | Convert to base 2-62 |
 | `format($dec, $point, $sep)` | Format with separators |
 | `getNumber()` | Get raw (non-normalized) number |
+| `getScale()` | Number of decimal places |
+| `getIntegralPart()` | Part before the decimal point |
+| `getFractionalPart()` | Part after the decimal point |
 | `(string)` | Get normalized number |
 
 ### Precision
@@ -300,33 +323,44 @@ Compared against [brick/math](https://github.com/brick/math) (PHP 8.4, opcache o
 
 | Operation | fab2s/math | brick/math | Factor |
 |---|---:|---:|---:|
-| instantiate int | **0.244μs (±6.9%)** | 0.274μs (±2.0%) | 1.12x |
-| instantiate string | **0.224μs (±8.8%)** | 0.566μs (±3.4%) | 2.52x |
-| add | **0.560μs (±16.8%)** | 2.083μs (±3.3%) | 3.72x |
-| add variadic | **1.244μs (±2.7%)** | 6.172μs (±2.7%) | 4.96x |
-| sub | **0.570μs (±4.6%)** | 2.134μs (±4.1%) | 3.75x |
-| mul | **0.659μs (±6.5%)** | 2.073μs (±6.2%) | 3.15x |
-| div | **0.646μs (±12.1%)** | 4.374μs (±2.3%) | 6.78x |
-| pow | **0.896μs (±4.9%)** | 1.248μs (±12.7%) | 1.39x |
-| mod | **0.800μs (±8.0%)** | 2.554μs (±5.1%) | 3.19x |
-| sqrt | **2.414μs (±7.2%)** | 4.893μs (±38.1%) | 2.03x |
-| abs | **0.594μs (±18.9%)** | 1.000μs (±8.4%) | 1.68x |
-| round | **0.556μs (±21.3%)** | 3.474μs (±5.2%) | 6.25x |
-| ceil | **0.505μs (±8.9%)** | 3.203μs (±37.2%) | 6.34x |
-| floor | **0.444μs (±3.3%)** | 2.448μs (±3.1%) | 5.52x |
-| comparisons | **1.471μs (±61.7%)** | 6.027μs (±4.7%) | 4.10x |
-| to string | **0.585μs (±19.4%)** | 0.842μs (±12.0%) | 1.44x |
-| chained workflow | **1.618μs (±3.3%)** | 8.461μs (±10.7%) | 5.23x |
-| large number ops | **1.679μs (±3.3%)** | 8.392μs (±3.4%) | 5.00x |
-| accumulate 100 additions | **37.691μs (±0.9%)** | 150.010μs (±1.7%) | 3.98x |
-| base convert to 62 | **1.079μs (±1.6%)** | 6.328μs (±16.6%) | 5.87x |
-| base convert to 16 | 0.966μs (±8.2%) | **0.863μs (±13.0%)** | 0.89x |
-| integer mul | **0.691μs (±33.0%)** | 1.859μs (±16.5%) | 2.69x |
-| integer powmod | **1.124μs (±8.3%)** | 2.551μs (±3.6%) | 2.27x |
-| create 1000 instances | **281.288μs (±3.2%)** | 669.150μs (±0.7%) | 2.38x |
-| immutable chain | **2.086μs (±5.9%)** | 13.237μs (±2.8%) | 6.34x |
+| instantiate int | **0.261μs (±4.0%)** | 0.301μs (±8.9%) | 1.15x |
+| instantiate string | **0.244μs (±36.6%)** | 0.678μs (±4.5%) | 2.78x |
+| add | **0.632μs (±9.7%)** | 2.278μs (±3.0%) | 3.60x |
+| add variadic | **1.406μs (±5.6%)** | 6.653μs (±1.3%) | 4.73x |
+| sub | **0.612μs (±1.7%)** | 2.325μs (±4.8%) | 3.80x |
+| mul | **0.665μs (±2.5%)** | 2.183μs (±4.9%) | 3.28x |
+| div | **0.762μs (±4.1%)** | 4.664μs (±3.6%) | 6.12x |
+| pow | **0.986μs (±47.0%)** | 1.416μs (±45.5%) | 1.44x |
+| mod | **0.851μs (±2.3%)** | 2.851μs (±42.2%) | 3.35x |
+| sqrt | **2.160μs (±3.6%)** | 4.536μs (±11.3%) | 2.10x |
+| abs | **0.344μs (±4.0%)** | 0.919μs (±35.8%) | 2.67x |
+| negate | **0.379μs (±10.5%)** | 1.036μs (±93.7%) | 2.73x |
+| clamp | **0.956μs (±64.5%)** | 4.325μs (±32.5%) | 4.53x |
+| quotient & remainder | **0.894μs (±10.7%)** | 2.878μs (±4.6%) | 3.22x |
+| inspection | **1.943μs (±5.7%)** | 4.672μs (±3.7%) | 2.40x |
+| round | **0.596μs (±31.8%)** | 3.495μs (±10.2%) | 5.86x |
+| ceil | **0.528μs (±8.1%)** | 2.965μs (±39.6%) | 5.62x |
+| floor | **0.469μs (±6.2%)** | 2.504μs (±4.0%) | 5.34x |
+| comparisons | **1.400μs (±7.5%)** | 6.171μs (±4.7%) | 4.41x |
+| to string | **0.529μs (±6.6%)** | 0.789μs (±3.4%) | 1.49x |
+| chained workflow | **1.810μs (±3.2%)** | 8.519μs (±2.0%) | 4.71x |
+| large number ops | **1.792μs (±5.9%)** | 8.273μs (±1.8%) | 4.62x |
+| accumulate 100 additions | **41.182μs (±3.0%)** | 147.875μs (±11.8%) | 3.59x |
+| base convert to 62 | **1.162μs (±23.8%)** | 6.888μs (±5.6%) | 5.93x |
+| base convert to 16 | 1.081μs (±15.3%) | **0.965μs (±7.6%)** | 0.89x |
+| integer mul | **0.937μs (±11.6%)** | 1.873μs (±5.3%) | 2.00x |
+| integer powmod | **1.263μs (±10.0%)** | 2.810μs (±7.9%) | 2.22x |
+| create 1000 instances | **301.794μs (±4.2%)** | 731.200μs (±2.6%) | 2.42x |
 
-fab2s/math wins every operation except base-16 conversion, where brick/math delegates to GMP's native hex output. The speed advantage comes from keeping bcmath's C-level string arithmetic as the hot path for decimal operations, while brick/math pays for an extra object-wrapping layer on top of GMP. Integer-only operations (`mod`, `pow`, `powMod`, base conversion) use GMP directly when the extension is available, combining the best of both backends. Realistic workflows like chained calculations or 100-iteration accumulations show a consistent 4-6x advantage, and the immutable variant stays over 6x faster thanks to a single lightweight `clone` per operation versus brick/math's heavier object allocation.
+All operations above use immutable `Math` (the default). fab2s/math wins every operation except base-16 conversion, where brick/math delegates to GMP's native hex output. The speed advantage comes from keeping bcmath's C-level string arithmetic as the hot path for decimal operations, while brick/math pays for an extra object-wrapping layer on top of GMP. Integer-only operations (`mod`, `pow`, `powMod`, base conversion) use GMP directly when the extension is available, combining the best of both backends. Realistic workflows like chained calculations or 100-iteration accumulations show a consistent 3-5x advantage, with immutability costing only a lightweight `clone` per operation (two properties: a string and an int).
+
+`MathMutable` eliminates the clone overhead entirely for hot loops:
+
+| Operation | MathMutable | Math (immutable) | brick/math |
+|---|---:|---:|---:|
+| chained workflow | **1.964μs (±8.5%)** | 2.294μs (±5.0%) | 14.149μs (±3.9%) |
+| accumulate 100 | **38.086μs (±2.0%)** | 41.339μs (±2.5%) | 147.063μs (±0.4%) |
+| branch | 2.795μs (±4.0%) | **2.580μs (±3.3%)** | 12.885μs (±20.7%) |
 
 Run benchmarks yourself:
 

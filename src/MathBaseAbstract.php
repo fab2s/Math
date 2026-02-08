@@ -78,9 +78,58 @@ abstract class MathBaseAbstract
         return $this->number[0] !== '-';
     }
 
+    public function isNegative(): bool
+    {
+        return $this->number[0] === '-' && trim($this->number, '-0.') !== '';
+    }
+
+    public function isZero(): bool
+    {
+        return trim($this->number, '+-0.') === '';
+    }
+
+    public function isEven(): bool
+    {
+        $number = static::normalizeReal($this->number);
+
+        return ! str_contains($number, '.') && bcmod($number, '2') === '0';
+    }
+
+    public function isOdd(): bool
+    {
+        $number = static::normalizeReal($this->number);
+
+        return ! str_contains($number, '.') && bcmod($number, '2') !== '0';
+    }
+
     public function hasDecimals(): bool
     {
         return str_contains($this->number, '.');
+    }
+
+    public function getScale(): int
+    {
+        $number = static::normalizeReal($this->number);
+        $pos    = strpos($number, '.');
+
+        return $pos === false ? 0 : strlen($number) - $pos - 1;
+    }
+
+    public function getIntegralPart(): string
+    {
+        $number = static::normalizeReal($this->number);
+        $pos    = strpos($number, '.');
+        $result = $pos === false ? $number : substr($number, 0, $pos);
+
+        return $result === '-0' ? '0' : $result;
+    }
+
+    public function getFractionalPart(): string
+    {
+        $number = static::normalizeReal($this->number);
+        $pos    = strpos($number, '.');
+
+        return $pos === false ? '' : substr($number, $pos + 1);
     }
 
     public function normalize(): static
@@ -102,7 +151,7 @@ abstract class MathBaseAbstract
 
     protected function mutate(): static
     {
-        return $this;
+        return clone $this;
     }
 
     public static function setGlobalPrecision(string|int $precision): void

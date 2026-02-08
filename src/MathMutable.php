@@ -11,10 +11,10 @@ declare(strict_types=1);
 
 namespace fab2s\Math;
 
-class MathImmutable extends Math
+class MathMutable extends Math
 {
     protected function mutate(): static
     {
-        return clone $this;
+        return $this;
     }
 }

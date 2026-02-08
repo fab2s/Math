@@ -14,17 +14,16 @@ namespace fab2s\Math\Benchmarks;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use fab2s\Math\Math;
-use fab2s\Math\MathImmutable;
+use fab2s\Math\MathMutable;
 use PhpBench\Attributes as Bench;
 
 /**
- * Compares MathImmutable with brick/math BigDecimal (both immutable)
- * and measures the overhead of immutability in fab2s/math.
+ * Compares Math (immutable) with MathMutable and brick/math BigDecimal.
  */
 #[Bench\Warmup(3)]
 #[Bench\Iterations(5)]
 #[Bench\Revs(1000)]
-class ImmutableBench
+class MutableBench
 {
     // ─── Mutable vs Immutable (fab2s internal comparison) ────────
 
@@ -32,7 +31,7 @@ class ImmutableBench
     #[Bench\Groups(['mutability'])]
     public function fab2s_mutable_chain(): void
     {
-        Math::number('1000.00')
+        MathMutable::number('1000.00')
             ->mul('1.21')
             ->add('50.00')
             ->sub('100.00')
@@ -45,7 +44,7 @@ class ImmutableBench
     #[Bench\Groups(['mutability'])]
     public function fab2s_immutable_chain(): void
     {
-        MathImmutable::number('1000.00')
+        Math::number('1000.00')
             ->mul('1.21')
             ->add('50.00')
             ->sub('100.00')
@@ -67,21 +66,32 @@ class ImmutableBench
         ;
     }
 
-    // ─── Accumulation with immutable objects ─────────────────────
+    // ─── Accumulation ───────────────────────────────────────────
 
     #[Bench\Subject]
-    #[Bench\Groups(['immutable_accumulation'])]
+    #[Bench\Groups(['accumulation'])]
+    #[Bench\Revs(100)]
+    public function fab2s_mutable_accumulate_100(): void
+    {
+        $sum = MathMutable::number('0');
+        for ($i = 0; $i < 100; $i++) {
+            $sum->add($i . '.99');
+        }
+    }
+
+    #[Bench\Subject]
+    #[Bench\Groups(['accumulation'])]
     #[Bench\Revs(100)]
     public function fab2s_immutable_accumulate_100(): void
     {
-        $sum = MathImmutable::number('0');
+        $sum = Math::number('0');
         for ($i = 0; $i < 100; $i++) {
             $sum = $sum->add($i . '.99');
         }
     }
 
     #[Bench\Subject]
-    #[Bench\Groups(['immutable_accumulation'])]
+    #[Bench\Groups(['accumulation'])]
     #[Bench\Revs(100)]
     public function brick_accumulate_100(): void
     {
@@ -95,9 +105,20 @@ class ImmutableBench
 
     #[Bench\Subject]
     #[Bench\Groups(['branch'])]
+    public function fab2s_mutable_branch(): void
+    {
+        $price     = MathMutable::number('99.99');
+        $withTax10 = MathMutable::number($price)->mul('1.10');
+        $withTax20 = MathMutable::number($price)->mul('1.20');
+        $withTax10->add('5.00')->round(2);
+        $withTax20->add('5.00')->round(2);
+    }
+
+    #[Bench\Subject]
+    #[Bench\Groups(['branch'])]
     public function fab2s_immutable_branch(): void
     {
-        $price     = MathImmutable::number('99.99');
+        $price     = Math::number('99.99');
         $withTax10 = $price->mul('1.10');
         $withTax20 = $price->mul('1.20');
         $withTax10->add('5.00')->round(2);

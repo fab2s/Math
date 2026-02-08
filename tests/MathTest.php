@@ -81,6 +81,10 @@ class MathTest extends TestCase
             ['-0', '0.00000000', 8],
             ['+0', '0.00000000', 8],
             ['0', '0'],
+            // negative values that round to zero must not produce -0
+            ['-0.001', '0.00', 2],
+            ['-0.004', '0.00', 2],
+            ['-0.000000001', '0.00000000', 8],
         ];
     }
 
@@ -521,6 +525,19 @@ class MathTest extends TestCase
             [
                 'number'   => Math::number(' 000100.0001 '),
                 'expected' => '100.0001',
+            ],
+            // negative zero variants with decimal padding
+            [
+                'number'   => '-0.00',
+                'expected' => '0',
+            ],
+            [
+                'number'   => '-0.000000000',
+                'expected' => '0',
+            ],
+            [
+                'number'   => '-00.00',
+                'expected' => '0',
             ],
         ];
     }
@@ -1192,5 +1209,168 @@ class MathTest extends TestCase
     {
         $this->assertSame('33.33', (string) Math::number('33.33'));
         $this->assertSame('33.33', Math::number('33.33')->jsonSerialize());
+    }
+
+    public function test_is_zero()
+    {
+        $this->assertTrue(Math::number('0')->isZero());
+        $this->assertTrue(Math::number('-0')->isZero());
+        $this->assertTrue(Math::number('+0')->isZero());
+        $this->assertTrue(Math::number('0.000000000')->isZero());
+        $this->assertFalse(Math::number('1')->isZero());
+        $this->assertFalse(Math::number('-1')->isZero());
+        $this->assertFalse(Math::number('0.000000001')->isZero());
+    }
+
+    public function test_is_negative()
+    {
+        $this->assertTrue(Math::number('-1')->isNegative());
+        $this->assertTrue(Math::number('-0.001')->isNegative());
+        $this->assertFalse(Math::number('0')->isNegative());
+        $this->assertFalse(Math::number('-0')->isNegative());
+        $this->assertFalse(Math::number('+0')->isNegative());
+        $this->assertFalse(Math::number('0.000000000')->isNegative());
+        $this->assertFalse(Math::number('1')->isNegative());
+        $this->assertFalse(Math::number('+42')->isNegative());
+    }
+
+    public function test_is_even()
+    {
+        $this->assertTrue(Math::number('0')->isEven());
+        $this->assertTrue(Math::number('2')->isEven());
+        $this->assertTrue(Math::number('42')->isEven());
+        $this->assertTrue(Math::number('-8')->isEven());
+        $this->assertFalse(Math::number('1')->isEven());
+        $this->assertFalse(Math::number('3')->isEven());
+        $this->assertFalse(Math::number('-7')->isEven());
+        // non-integers are neither even nor odd
+        $this->assertFalse(Math::number('42.5')->isEven());
+        $this->assertFalse(Math::number('2.0001')->isEven());
+        $this->assertFalse(Math::number('-3.14')->isEven());
+    }
+
+    public function test_is_odd()
+    {
+        $this->assertTrue(Math::number('1')->isOdd());
+        $this->assertTrue(Math::number('3')->isOdd());
+        $this->assertTrue(Math::number('-7')->isOdd());
+        $this->assertFalse(Math::number('0')->isOdd());
+        $this->assertFalse(Math::number('2')->isOdd());
+        $this->assertFalse(Math::number('42')->isOdd());
+        // non-integers are neither even nor odd
+        $this->assertFalse(Math::number('42.5')->isOdd());
+        $this->assertFalse(Math::number('1.001')->isOdd());
+        $this->assertFalse(Math::number('-3.14')->isOdd());
+    }
+
+    public function test_is_even_odd_after_operations()
+    {
+        // after operations, bcmath pads with zeros — should still work
+        $this->assertTrue(Math::number('1')->add('1')->isEven());
+        $this->assertTrue(Math::number('2')->add('1')->isOdd());
+        $this->assertFalse(Math::number('1')->div('3')->isEven());
+        $this->assertFalse(Math::number('1')->div('3')->isOdd());
+    }
+
+    public function test_get_scale()
+    {
+        $this->assertSame(0, Math::number('42')->getScale());
+        $this->assertSame(2, Math::number('42.99')->getScale());
+        $this->assertSame(9, Math::number('1.123456789')->getScale());
+        $this->assertSame(3, Math::number('-0.001')->getScale());
+        // after operations, bcmath padding should be stripped
+        $this->assertSame(0, Math::number('1')->add('1')->getScale());
+        $this->assertSame(0, Math::number('1.5')->add('0.5')->getScale());
+        $this->assertSame(1, Math::number('1.5')->add('0.3')->getScale());
+    }
+
+    public function test_get_integral_part()
+    {
+        $this->assertSame('42', Math::number('42')->getIntegralPart());
+        $this->assertSame('42', Math::number('42.99')->getIntegralPart());
+        $this->assertSame('0', Math::number('-0.001')->getIntegralPart());
+        $this->assertSame('0', Math::number('0')->getIntegralPart());
+        $this->assertSame('0', Math::number('-0')->getIntegralPart());
+        // after operations
+        $this->assertSame('2', Math::number('1')->add('1')->getIntegralPart());
+    }
+
+    public function test_get_fractional_part()
+    {
+        $this->assertSame('', Math::number('42')->getFractionalPart());
+        $this->assertSame('99', Math::number('42.99')->getFractionalPart());
+        $this->assertSame('001', Math::number('-0.001')->getFractionalPart());
+        $this->assertSame('123456789', Math::number('1.123456789')->getFractionalPart());
+        // after operations, padding should be stripped
+        $this->assertSame('', Math::number('1')->add('1')->getFractionalPart());
+    }
+
+    public function test_negate()
+    {
+        $this->assertSame('-42', (string) Math::number('42')->negate());
+        $this->assertSame('42', (string) Math::number('-42')->negate());
+        $this->assertSame('0', (string) Math::number('0')->negate());
+        $this->assertSame('0', (string) Math::number('-0')->negate());
+        $this->assertSame('0', (string) Math::number('+0')->negate());
+        $this->assertSame('0', (string) Math::number('0.000000000')->negate());
+        $this->assertSame('-0.5', (string) Math::number('0.5')->negate());
+        $this->assertSame('0.5', (string) Math::number('-0.5')->negate());
+        // beyond precision — should still negate
+        $this->assertSame('-0.0000000001', (string) Math::number('0.0000000001')->negate());
+    }
+
+    public function test_negate_is_immutable()
+    {
+        $a = Math::number('42');
+        $b = $a->negate();
+
+        $this->assertSame('42', (string) $a);
+        $this->assertSame('-42', (string) $b);
+        $this->assertNotSame($a, $b);
+    }
+
+    public function test_clamp()
+    {
+        $this->assertSame('5', (string) Math::number('5')->clamp('0', '10'));
+        $this->assertSame('0', (string) Math::number('-5')->clamp('0', '10'));
+        $this->assertSame('10', (string) Math::number('15')->clamp('0', '10'));
+        $this->assertSame('0', (string) Math::number('0')->clamp('0', '10'));
+        $this->assertSame('10', (string) Math::number('10')->clamp('0', '10'));
+        $this->assertSame('-5', (string) Math::number('-5')->clamp('-10', '-1'));
+    }
+
+    public function test_clamp_is_immutable()
+    {
+        $a = Math::number('15');
+        $b = $a->clamp('0', '10');
+
+        $this->assertSame('15', (string) $a);
+        $this->assertSame('10', (string) $b);
+        $this->assertNotSame($a, $b);
+    }
+
+    public function test_quotient_and_remainder()
+    {
+        [$q, $r] = Math::number('17')->quotientAndRemainder('5');
+        $this->assertSame('3', (string) $q);
+        $this->assertSame('2', (string) $r);
+
+        [$q, $r] = Math::number('100')->quotientAndRemainder('10');
+        $this->assertSame('10', (string) $q);
+        $this->assertSame('0', (string) $r);
+
+        [$q, $r] = Math::number('-17')->quotientAndRemainder('5');
+        $this->assertSame('-3', (string) $q);
+        $this->assertSame('-2', (string) $r);
+    }
+
+    public function test_quotient_and_remainder_is_immutable()
+    {
+        $a       = Math::number('17');
+        [$q, $r] = $a->quotientAndRemainder('5');
+
+        $this->assertSame('17', (string) $a);
+        $this->assertNotSame($a, $q);
+        $this->assertNotSame($a, $r);
     }
 }

@@ -234,6 +234,96 @@ class MathBench
         ;
     }
 
+    // ─── Negate ─────────────────────────────────────────────────
+
+    #[Bench\Subject]
+    #[Bench\Groups(['negate'])]
+    public function fab2s_negate(): void
+    {
+        Math::number('987654321.123456789')
+            ->negate()
+        ;
+    }
+
+    #[Bench\Subject]
+    #[Bench\Groups(['negate'])]
+    public function brick_negate(): void
+    {
+        BigDecimal::of('987654321.123456789')
+            ->negated()
+        ;
+    }
+
+    // ─── Clamp ──────────────────────────────────────────────────
+
+    #[Bench\Subject]
+    #[Bench\Groups(['clamp'])]
+    public function fab2s_clamp(): void
+    {
+        Math::number('987654321.123456789')
+            ->clamp('100', '999999999')
+        ;
+    }
+
+    #[Bench\Subject]
+    #[Bench\Groups(['clamp'])]
+    public function brick_clamp(): void
+    {
+        BigDecimal::of('987654321.123456789')
+            ->clamp('100', '999999999')
+        ;
+    }
+
+    // ─── Quotient and Remainder ─────────────────────────────────
+
+    #[Bench\Subject]
+    #[Bench\Groups(['quotient_remainder'])]
+    public function fab2s_quotient_and_remainder(): void
+    {
+        Math::number('987654321')
+            ->quotientAndRemainder('12345')
+        ;
+    }
+
+    #[Bench\Subject]
+    #[Bench\Groups(['quotient_remainder'])]
+    public function brick_quotient_and_remainder(): void
+    {
+        BigDecimal::of('987654321')
+            ->quotientAndRemainder('12345')
+        ;
+    }
+
+    // ─── Inspection ─────────────────────────────────────────────
+
+    #[Bench\Subject]
+    #[Bench\Groups(['inspection'])]
+    public function fab2s_inspection(): void
+    {
+        $a = Math::number('123456789.123456789');
+        $a->isZero();
+        $a->isPositive();
+        $a->isNegative();
+        $a->isEven();
+        $a->isOdd();
+        $a->getScale();
+        $a->getIntegralPart();
+        $a->getFractionalPart();
+    }
+
+    #[Bench\Subject]
+    #[Bench\Groups(['inspection'])]
+    public function brick_inspection(): void
+    {
+        $a = BigDecimal::of('123456789.123456789');
+        $a->isZero();
+        $a->isPositive();
+        $a->isNegative();
+        $a->getScale();
+        $a->getIntegralPart();
+        $a->getFractionalPart();
+    }
+
     // ─── Rounding ────────────────────────────────────────────────
 
     #[Bench\Subject]
@@ -394,7 +484,7 @@ class MathBench
     {
         $sum = Math::number('0');
         for ($i = 0; $i < 100; $i++) {
-            $sum->add((string) $i . '.99');
+            $sum = $sum->add((string) $i . '.99');
         }
     }
 

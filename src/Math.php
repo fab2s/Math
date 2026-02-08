@@ -117,7 +117,7 @@ class Math extends MathOpsAbstract implements JsonSerializable, Stringable
         $result   = '';
         $strBase  = (string) $base;
         $baseChar = static::getBaseChar($base);
-        while (bccomp($number, '0') != 0) { // still data to process
+        while ($number !== '0') { // still data to process
             $rem    = (int) bcmod($number, $strBase); // calc the remainder
             $number = bcdiv(bcsub($number, (string) $rem), $strBase);
             $result = $baseChar[$rem] . $result;
@@ -135,7 +135,8 @@ class Math extends MathOpsAbstract implements JsonSerializable, Stringable
         // do not mutate
         $number = (new self($this))->round($decimals)->normalize();
         $sign   = $number->isPositive() ? '' : '-';
-        if ($number->abs()->hasDecimals()) {
+        $number = $number->abs();
+        if ($number->hasDecimals()) {
             [$number, $dec] = explode('.', (string) $number);
         } else {
             $number = (string) $number;

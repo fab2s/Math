@@ -166,6 +166,39 @@ abstract class MathOpsAbstract extends MathBaseAbstract
         return $result;
     }
 
+    public function negate(): static
+    {
+        $result = $this->mutate();
+        if ($result->number[0] === '-') {
+            $result->number = substr($result->number, 1); // @phpstan-ignore assign.propertyType
+        } elseif (trim($result->number, '+-0.') !== '') {
+            $result->number = '-' . $result->number; // @phpstan-ignore assign.propertyType
+        }
+
+        return $result;
+    }
+
+    public function clamp(string|int|float|Math $min, string|int|float|Math $max): static
+    {
+        return $this->max($min)->min($max);
+    }
+
+    /**
+     * @return array{static, static}
+     */
+    public function quotientAndRemainder(string|int|float|Math $divisor): array
+    {
+        $divisor   = static::validateInputNumber($divisor);
+        $number    = $this->number;
+        $quotient  = $this->mutate();
+        $remainder = clone $this;
+
+        $quotient->number  = bcdiv($number, $divisor, 0);
+        $remainder->number = bcmod($number, $divisor, $this->precision);
+
+        return [$quotient, $remainder];
+    }
+
     /**
      * returns the highest number among all arguments
      */
