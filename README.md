@@ -32,7 +32,7 @@ composer require fab2s/math
 
 ### Requirements
 
-- PHP 8.1+
+- PHP 8.2+
 - ext-bcmath (required)
 - ext-gmp (optional, faster base conversions, mod, pow and powMod)
 
@@ -368,38 +368,38 @@ protected $casts = [
 
 ## Benchmarks
 
-Compared against [brick/math](https://github.com/brick/math) (PHP 8.4, opcache off, GMP enabled). The **bold** value is the faster one in each row, and _Factor_ shows how many times faster it is.
+Compared against [brick/math](https://github.com/brick/math) (PHP 8.5, opcache off, GMP enabled). The **bold** value is the faster one in each row, and _Factor_ shows how many times faster it is.
 
 | Operation | fab2s/math | brick/math | Factor |
 |---|---:|---:|---:|
-| instantiate int | **0.261μs (±4.0%)** | 0.301μs (±8.9%) | 1.15x |
-| instantiate string | **0.244μs (±36.6%)** | 0.678μs (±4.5%) | 2.78x |
-| add | **0.632μs (±9.7%)** | 2.278μs (±3.0%) | 3.60x |
-| add variadic | **1.406μs (±5.6%)** | 6.653μs (±1.3%) | 4.73x |
-| sub | **0.612μs (±1.7%)** | 2.325μs (±4.8%) | 3.80x |
-| mul | **0.665μs (±2.5%)** | 2.183μs (±4.9%) | 3.28x |
-| div | **0.762μs (±4.1%)** | 4.664μs (±3.6%) | 6.12x |
-| pow | **0.986μs (±47.0%)** | 1.416μs (±45.5%) | 1.44x |
-| mod | **0.851μs (±2.3%)** | 2.851μs (±42.2%) | 3.35x |
-| sqrt | **2.160μs (±3.6%)** | 4.536μs (±11.3%) | 2.10x |
-| abs | **0.344μs (±4.0%)** | 0.919μs (±35.8%) | 2.67x |
-| negate | **0.379μs (±10.5%)** | 1.036μs (±93.7%) | 2.73x |
-| clamp | **0.956μs (±64.5%)** | 4.325μs (±32.5%) | 4.53x |
-| quotient & remainder | **0.894μs (±10.7%)** | 2.878μs (±4.6%) | 3.22x |
-| inspection | **1.943μs (±5.7%)** | 4.672μs (±3.7%) | 2.40x |
-| round | **0.596μs (±31.8%)** | 3.495μs (±10.2%) | 5.86x |
-| ceil | **0.528μs (±8.1%)** | 2.965μs (±39.6%) | 5.62x |
-| floor | **0.469μs (±6.2%)** | 2.504μs (±4.0%) | 5.34x |
-| comparisons | **1.400μs (±7.5%)** | 6.171μs (±4.7%) | 4.41x |
-| to string | **0.529μs (±6.6%)** | 0.789μs (±3.4%) | 1.49x |
-| chained workflow | **1.810μs (±3.2%)** | 8.519μs (±2.0%) | 4.71x |
-| large number ops | **1.792μs (±5.9%)** | 8.273μs (±1.8%) | 4.62x |
-| accumulate 100 additions | **41.182μs (±3.0%)** | 147.875μs (±11.8%) | 3.59x |
-| base convert to 62 | **1.162μs (±23.8%)** | 6.888μs (±5.6%) | 5.93x |
-| base convert to 16 | 1.081μs (±15.3%) | **0.965μs (±7.6%)** | 0.89x |
-| integer mul | **0.937μs (±11.6%)** | 1.873μs (±5.3%) | 2.00x |
-| integer powmod | **1.263μs (±10.0%)** | 2.810μs (±7.9%) | 2.22x |
-| create 1000 instances | **301.794μs (±4.2%)** | 731.200μs (±2.6%) | 2.42x |
+| instantiate int | **0.117μs (±15.1%)** | 0.134μs (±8.7%) | 1.14x |
+| instantiate string | **0.107μs (±2.4%)** | 0.351μs (±1.5%) | 3.29x |
+| add | **0.343μs (±0.8%)** | 1.177μs (±1.7%) | 3.43x |
+| add variadic | **0.674μs (±2.4%)** | 3.261μs (±1.3%) | 4.84x |
+| sub | **0.345μs (±4.7%)** | 1.155μs (±0.5%) | 3.35x |
+| mul | **0.382μs (±2.2%)** | 1.162μs (±1.6%) | 3.04x |
+| div | **0.365μs (±6.5%)** | 2.055μs (±5.6%) | 5.63x |
+| pow | **0.406μs (±24.3%)** | 0.728μs (±0.8%) | 1.79x |
+| mod | **0.416μs (±0.8%)** | 1.270μs (±7.8%) | 3.06x |
+| sqrt | **1.123μs (±0.9%)** | 1.380μs (±1.3%) | 1.23x |
+| abs | **0.185μs (±0.6%)** | 0.517μs (±1.1%) | 2.80x |
+| negate | **0.215μs (±1.8%)** | 0.466μs (±1.0%) | 2.17x |
+| clamp | **0.478μs (±0.7%)** | 2.117μs (±5.6%) | 4.43x |
+| quotient & remainder | **0.453μs (±0.9%)** | 1.306μs (±0.8%) | 2.89x |
+| inspection | **1.065μs (±3.1%)** | 1.460μs (±2.5%) | 1.37x |
+| round | **0.342μs (±3.3%)** | 1.483μs (±1.1%) | 4.33x |
+| ceil | **0.320μs (±0.5%)** | 1.298μs (±3.1%) | 4.06x |
+| floor | **0.289μs (±1.9%)** | 1.174μs (±1.2%) | 4.06x |
+| comparisons | **0.644μs (±1.5%)** | 2.777μs (±1.2%) | 4.31x |
+| to string | **0.326μs (±1.6%)** | 0.511μs (±0.5%) | 1.57x |
+| chained workflow | **0.965μs (±1.2%)** | 3.683μs (±0.9%) | 3.82x |
+| large number ops | **0.903μs (±1.7%)** | 3.433μs (±1.1%) | 3.80x |
+| accumulate 100 additions | **21.421μs (±1.8%)** | 73.261μs (±1.2%) | 3.42x |
+| base convert to 62 | **0.615μs (±1.3%)** | 2.580μs (±1.5%) | 4.19x |
+| base convert to 16 | 0.607μs (±1.3%) | **0.458μs (±1.9%)** | 0.75x |
+| integer mul | **0.424μs (±1.4%)** | 1.014μs (±11.0%) | 2.39x |
+| integer powmod | **0.551μs (±0.7%)** | 1.410μs (±1.3%) | 2.56x |
+| create 1000 instances | **127.530μs (±1.8%)** | 385.754μs (±1.1%) | 3.02x |
 
 All operations above use immutable `Math` (the default). fab2s/math wins every operation except base-16 conversion, where brick/math delegates to GMP's native hex output. The speed advantage comes from keeping bcmath's C-level string arithmetic as the hot path for decimal operations, while brick/math pays for an extra object-wrapping layer on top of GMP. Integer-only operations (`mod`, `pow`, `powMod`, base conversion) use GMP directly when the extension is available, combining the best of both backends. Realistic workflows like chained calculations or 100-iteration accumulations show a consistent 3-5x advantage, with immutability costing only a lightweight `clone` per operation (two properties: a string and an int).
 
@@ -407,9 +407,9 @@ All operations above use immutable `Math` (the default). fab2s/math wins every o
 
 | Operation | MathMutable | Math (immutable) | brick/math |
 |---|---:|---:|---:|
-| chained workflow | **1.964μs (±8.5%)** | 2.294μs (±5.0%) | 14.149μs (±3.9%) |
-| accumulate 100 | **38.086μs (±2.0%)** | 41.339μs (±2.5%) | 147.063μs (±0.4%) |
-| branch | 2.795μs (±4.0%) | **2.580μs (±3.3%)** | 12.885μs (±20.7%) |
+| chained workflow | **1.018μs (±0.2%)** | 1.189μs (±3.0%) | 5.352μs (±1.2%) |
+| accumulate 100 | **17.499μs (±1.1%)** | 20.765μs (±2.3%) | 74.043μs (±0.5%) |
+| branch | 1.457μs (±6.2%) | **1.388μs (±2.7%)** | 5.596μs (±1.1%) |
 
 Run benchmarks yourself:
 
