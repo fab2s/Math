@@ -25,7 +25,6 @@ class Math extends MathOpsAbstract implements JsonSerializable, Stringable
     public function __construct(string|int|float|Math $number)
     {
         if (isset(static::$globalPrecision)) {
-            /* @codeCoverageIgnore */
             $this->precision = static::$globalPrecision;
         }
 
@@ -173,4 +172,8 @@ class Math extends MathOpsAbstract implements JsonSerializable, Stringable
 }
 
 // OMG a dynamic static anti pattern ^^
+// runs at file load, before per test coverage collection starts,
+// so it can never be reported as covered
+// @codeCoverageIgnoreStart
 Math::gmpSupport();
+// @codeCoverageIgnoreEnd
